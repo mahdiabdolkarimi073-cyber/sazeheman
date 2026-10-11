@@ -155,14 +155,15 @@ p {
 }
 
 .construction-hero {
-  background-image: url('/images/hero/Blueprints_Over_a_Golden_Construction_Skyline.png');
+  background-image: url('/images/hero/Blueprints_Over_a_Golden_Construction_Skyline%20copy.png');
   background-size: cover;
-  background-position: center right;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
 @media (max-width: 640px) {
   .construction-hero {
-    background-position: 34% center;
+    background-position: 28% center;
   }
 }
 

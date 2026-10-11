@@ -11,9 +11,12 @@ export default function ConstructionHero() {
     const [search, setSearch] = useState('');
 
     return (
-        <section className="construction-hero relative w-full min-h-[620px] lg:min-h-[680px] flex items-center overflow-hidden">
+        <section
+            className="construction-hero relative w-full min-h-[620px] lg:min-h-[680px] flex items-center overflow-hidden"
+            style={{ backgroundImage: "url('/images/hero/Blueprints_Over_a_Golden_Construction_Skyline%20copy.png')" }}
+        >
             <div className="absolute inset-0 bg-cover bg-no-repeat bg-center-right" aria-hidden="true" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(23,61,53,0.18)_0%,rgba(23,61,53,0.8)_52%,rgba(23,61,53,0.94)_100%)]" aria-hidden="true" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(23,61,53,0.08)_0%,rgba(23,61,53,0.28)_48%,rgba(23,61,53,0.68)_100%)]" aria-hidden="true" />
 
             <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-24 lg:py-28">
                 <div className="max-w-2xl mr-0 lg:mr-auto text-right">
