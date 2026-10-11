@@ -48,24 +48,24 @@ const BENEFITS = [
 
 export default function TrustBenefits() {
     return (
-        <section className="w-full bg-container py-16">
+        <section className="w-full bg-[#f7f8f6] border-y border-[#e5ebe6] py-20" aria-labelledby="benefits-title">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
                     <div className="flex items-center justify-center gap-3 mb-3">
                         <div className="w-1.5 h-8 rounded-full bg-primary" />
-                        <h2 className="text-xl sm:text-2xl font-bold">چرا سازه‌همان؟</h2>
+                        <h2 id="benefits-title" className="text-2xl sm:text-3xl font-bold text-[#252c2a]">چرا سازه‌همان؟</h2>
                     </div>
-                    <p className="text-sm opacity-60">مزایای استفاده از پلتفرم جامع صنعت ساختمان</p>
+                    <p className="text-base text-[#6b7771]">مزایای استفاده از پلتفرم جامع صنعت ساختمان</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     {BENEFITS.map((b, i) => (
-                        <div key={i} className="bg-white rounded-2xl p-5 border border-b2 flex flex-col gap-3 text-center items-center">
+                        <div key={i} className="bg-white rounded-xl p-6 border border-[#e5ebe6] flex flex-col gap-4 text-center items-center shadow-[0_5px_18px_rgba(23,61,53,0.04)]">
                             <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                                 {b.icon}
                             </div>
-                            <h3 className="font-semibold text-sm leading-tight">{b.title}</h3>
-                            <p className="text-xs opacity-60 leading-relaxed">{b.desc}</p>
+                            <h3 className="font-semibold text-base leading-tight text-[#252c2a]">{b.title}</h3>
+                            <p className="text-sm text-[#6b7771] leading-[1.8]">{b.desc}</p>
                         </div>
                     ))}
                 </div>

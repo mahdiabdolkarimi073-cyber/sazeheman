@@ -148,11 +148,11 @@ function Card({ comment }: { comment: Comment }) {
                     </div>
                 </div>
                 <div>
-                    <p className="font-bold text-sm">{comment.name}</p>
-                    <p className="text-xs text-primary-dark opacity-80">{comment.role}</p>
+                    <p className="font-bold text-base">{comment.name}</p>
+                    <p className="text-sm text-primary-dark opacity-80">{comment.role}</p>
                 </div>
             </div>
-            <p className="opacity-70 text-sm leading-relaxed">
+            <p className="text-base text-[#4f5b56] leading-[1.9]">
                 {comment.text}
             </p>
         </div>

@@ -154,6 +154,18 @@ p {
   scrollbar-color: var(--primary) var(--container);
 }
 
+.construction-hero {
+  background-image: url('/images/hero/Blueprints_Over_a_Golden_Construction_Skyline.png');
+  background-size: cover;
+  background-position: center right;
+}
+
+@media (max-width: 640px) {
+  .construction-hero {
+    background-position: 34% center;
+  }
+}
+
 /* New design system - soft green theme */
 .glass-card {
   background: rgba(255, 255, 255, 0.65);

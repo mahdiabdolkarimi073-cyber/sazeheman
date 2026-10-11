@@ -24,7 +24,7 @@ export default async function Home() {
     return (
         <main>
             <ConstructionHero />
-            <ConstructionCategories />
+            <div id="categories"><ConstructionCategories /></div>
             <div id="map">
                 <MainMap />
             </div>

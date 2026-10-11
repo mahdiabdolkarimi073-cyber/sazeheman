@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import CustomBadge from '@/components/ui/base/CustomBadge';
 
 const PROFESSIONALS = [
     {
@@ -53,13 +52,13 @@ const PROFESSIONALS = [
 
 export default function FeaturedProfessionals() {
     return (
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20" aria-labelledby="featured-title">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-8 rounded-full bg-primary" />
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold">متخصصان ویژه</h2>
-                        <p className="text-sm opacity-60 mt-1">حرفه‌ای‌های تأییدشده صنعت ساختمان</p>
+                        <h2 id="featured-title" className="text-2xl sm:text-3xl font-bold text-[#252c2a]">متخصصان ویژه</h2>
+                        <p className="text-base text-[#6b7771] mt-2">حرفه‌ای‌های تأییدشده صنعت ساختمان</p>
                     </div>
                 </div>
                 <Link href="/#map" className="text-primary text-sm font-medium hover:opacity-80 transition-opacity">
@@ -71,7 +70,7 @@ export default function FeaturedProfessionals() {
                 {PROFESSIONALS.map((p, i) => (
                     <div
                         key={i}
-                        className="snap-start shrink-0 w-72 rounded-2xl bg-container border border-b2 overflow-hidden hover-lift"
+                        className="snap-start shrink-0 w-[20rem] rounded-xl bg-white border border-[#e5ebe6] overflow-hidden hover-lift shadow-[0_5px_18px_rgba(23,61,53,0.05)]"
                     >
                         <div className="h-40 relative overflow-hidden">
                             <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
@@ -90,9 +89,9 @@ export default function FeaturedProfessionals() {
                             )}
                         </div>
                         <div className="p-4 flex flex-col gap-2">
-                            <h3 className="font-bold text-sm">{p.name}</h3>
-                            <p className="text-xs text-primary font-medium">{p.trade}</p>
-                            <p className="text-xs opacity-60 leading-relaxed">{p.desc}</p>
+                            <h3 className="font-bold text-base text-[#252c2a]">{p.name}</h3>
+                            <p className="text-sm text-primary font-medium">{p.trade}</p>
+                            <p className="text-sm text-[#6b7771] leading-relaxed">{p.desc}</p>
                             <div className="flex items-center gap-1 text-xs opacity-50">
                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />

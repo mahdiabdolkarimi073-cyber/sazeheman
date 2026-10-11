@@ -34,13 +34,13 @@ const CATEGORIES = [
 
 export default function ConstructionCategories() {
     return (
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20" aria-labelledby="categories-title">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-8 rounded-full bg-primary" />
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold">دسته‌بندی مشاغل ساختمانی</h2>
-                        <p className="text-sm opacity-60 mt-1">تخصص مورد نظر خود را انتخاب کنید</p>
+                        <h2 id="categories-title" className="text-2xl sm:text-3xl font-bold text-[#252c2a]">دسته‌بندی مشاغل ساختمانی</h2>
+                        <p className="text-base text-[#6b7771] mt-2">تخصص مورد نظر خود را انتخاب کنید</p>
                     </div>
                 </div>
                 <Link href="/#map" className="text-primary text-sm font-medium hover:opacity-80 transition-opacity whitespace-nowrap">
@@ -53,10 +53,10 @@ export default function ConstructionCategories() {
                     <Link
                         key={i}
                         href="/#map"
-                        className="glass-card rounded-xl p-4 flex flex-col items-center gap-2 text-center hover-lift border border-b2"
+                        className="bg-white rounded-xl p-4 sm:p-5 min-h-[112px] flex flex-col items-center justify-center gap-3 text-center hover-lift border border-[#e5ebe6] shadow-[0_5px_18px_rgba(23,61,53,0.04)]"
                     >
                         <span className="text-2xl">{cat.icon}</span>
-                        <span className="text-xs sm:text-sm font-medium leading-tight">{cat.label}</span>
+                        <span className="text-sm sm:text-base font-medium leading-tight text-[#252c2a]">{cat.label}</span>
                     </Link>
                 ))}
             </div>

@@ -87,8 +87,8 @@ const Header = (props: {
             ref={headerRef}
             className={`py-3 ${isFixed ? "fixed" : "sticky"} w-full top-0 z-20 transition-all duration-500 ease-out ${
                 isScrolled
-                    ? 'bg-white/70 dark:bg-[#0E0F0F]/70 backdrop-blur-xl shadow-[0_4px_30px_rgba(93,212,168,0.08)] border-b border-[rgba(93,212,168,0.12)]'
-                    : ""
+                    ? 'bg-white/95 dark:bg-[#0E0F0F]/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(23,61,53,0.12)] border-b border-[rgba(23,61,53,0.12)]'
+                    : pathname === '/' ? 'bg-[#173D35]/80 backdrop-blur-sm text-white' : 'bg-transparent'
             } ${isMobileMenuOpen
                 ? 'md:bg-transparent bg-container! open'
                 : 'bg-transparent'

@@ -35,7 +35,7 @@ const TENDERS = [
         status: 'open',
     },
     {
-        title: 'کاشی‌کاری全套 ۱۲ واحدی',
+        title: 'کاشی‌کاری ۱۲ واحدی',
         service: 'کاشی و سرامیک',
         city: 'مشهد',
         deadline: '۱۴۰۳/۰۸/۲۵',
@@ -54,13 +54,13 @@ const TENDERS = [
 
 export default function TendersSection() {
     return (
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-[#f7f8f6]" aria-labelledby="tenders-title">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-8 rounded-full bg-primary" />
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold">مزایده‌های فعال ساختمانی</h2>
-                        <p className="text-sm opacity-60 mt-1">پیشنهادهای رقابتی برای پروژه‌های ساختمانی</p>
+                        <h2 id="tenders-title" className="text-2xl sm:text-3xl font-bold text-[#252c2a]">مزایده‌های فعال ساختمانی</h2>
+                        <p className="text-base text-[#6b7771] mt-2">پیشنهادهای رقابتی برای پروژه‌های ساختمانی</p>
                     </div>
                 </div>
                 <span className="text-xs px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
@@ -70,19 +70,19 @@ export default function TendersSection() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {TENDERS.map((tender, i) => (
-                    <div key={i} className="rounded-2xl bg-container border border-b2 p-5 hover-lift flex flex-col gap-3">
+                    <div key={i} className="rounded-xl bg-white border border-[#e5ebe6] p-6 hover-lift flex flex-col gap-4 shadow-[0_5px_18px_rgba(23,61,53,0.04)]">
                         <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-bold text-sm leading-tight">{tender.title}</h3>
+                            <h3 className="font-bold text-base leading-tight text-[#252c2a]">{tender.title}</h3>
                             <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap font-medium">
                                 باز
                             </span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs opacity-60">
+                        <div className="flex items-center gap-2 text-sm text-[#6b7771]">
                             <span className="px-2 py-0.5 rounded bg-primary/8 text-primary font-medium">{tender.service}</span>
                             <span>•</span>
                             <span>{tender.city}</span>
                         </div>
-                        <div className="flex items-center justify-between text-xs opacity-50 border-t border-b2 pt-3">
+                        <div className="flex items-center justify-between text-sm text-[#6b7771] border-t border-[#e5ebe6] pt-4">
                             <span>مهلت: {tender.deadline}</span>
                             <span>{tender.bids.toLocaleString('fa')} پیشنهاد</span>
                         </div>
