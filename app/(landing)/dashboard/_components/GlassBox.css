@@ -1,0 +1,55 @@
+.glass-box-wrapper {
+    position: relative;
+    padding: var(--border, 1px);
+    border-radius: var(--radius, 16px);
+    width: 100%;
+    overflow: hidden;
+}
+
+.glass-box-wrapper:not(.no-border):before {
+    background: linear-gradient(var(--deg, 180deg), var(--border-from, var(--primary)) 0%, var(--border-to, #e4e4e4) 70%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    padding: calc(var(--border, 1px));
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--radius, 16px) + 1px);
+}
+
+.glass-box-inner {
+    position: relative;
+    background: var(--inner-bg, white);
+    border-radius: var(--radius, 16px);
+    min-height: 100%;
+    overflow: hidden;
+}
+
+.glass-box-inner {
+    z-index: 3;
+}
+
+.glass-box-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(var(--deg, 0deg), var(--inner-from, var(--primary)) var(--from-percent, 0%), var(--inner-to, transparent) var(--to-percent, 100%));
+    opacity: var(--inner-opacity, 0.08);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.glass-box-wrapper.fade .circle-filter {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--background), transparent, transparent, var(--background));
+    z-index: 0;
+    opacity: var(--fade-opacity, 0.7);
+}

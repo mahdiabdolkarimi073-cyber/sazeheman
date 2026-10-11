@@ -1,0 +1,105 @@
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 10;
+  src: url("/fonts/Dana-Hairline.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 100;
+  src: url("/fonts/Dana-Thin.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 200;
+  src: url("/fonts/Dana-UltraLight.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 300;
+  src: url("/fonts/Dana-Light.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/Dana-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 500;
+  src: url("/fonts/Dana-Medium.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/fonts/Dana-DemiBold.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/fonts/Dana-Bold.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 800;
+  src: url("/fonts/Dana-ExtraBold.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 900;
+  src: url("/fonts/Dana-Black.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 930;
+  src: url("/fonts/Dana-ExtraBlack.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 960;
+  src: url("/fonts/Dana-Heavy.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: 990;
+  src: url("/fonts/Dana-fat.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: normal;
+  src: url("/fonts/Dana-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  font-style: normal;
+  font-weight: bold;
+  src: url("/fonts/Dana-ExtraBold.woff2") format("woff2");
+  font-display: swap;
+}

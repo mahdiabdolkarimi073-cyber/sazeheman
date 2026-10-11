@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prisma/dev.db"
+}
+
+model ConstructionProject {
+  id             String   @id @default(uuid())
+  project_name   String
+  builder_name   String
+  area           Float?
+  start_date     String?
+  floors_count   Int?
+  manager_role   String?
+  phone1         String
+  phone2         String?
+  phone3         String?
+  email          String?
+  other_contacts String?
+  description    String?
+  address        String?
+  location_lat   Float?
+  location_lng   Float?
+  photo_url      String?
+  phone_verified Boolean  @default(false)
+  status         String   @default("pending")
+  created_at     DateTime @default(now())
+
+  needs          ProjectNeed[]
+  notifications  Notification[]
+
+  @@map("construction_projects")
+}
+
+model ConstructionJob {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  icon       String?
+  created_at DateTime @default(now())
+
+  needs         ProjectNeed[]
+  notifications Notification[]
+  businesses    Business[]
+
+  @@map("construction_jobs")
+}
+
+model ProjectNeed {
+  id          String   @id @default(uuid())
+  project_id  String
+  job_id      String
+  description String?
+  created_at  DateTime @default(now())
+
+  project ConstructionProject @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  job    ConstructionJob     @relation(fields: [job_id], references: [id], onDelete: Cascade)
+
+  @@map("project_needs")
+}
+
+model SmsCode {
+  id         String   @id @default(uuid())
+  phone      String
+  code       String
+  expires_at DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@map("sms_codes")
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  job_id      String?
+  project_id  String?
+  description String?
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  job     ConstructionJob?     @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  project ConstructionProject? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Business {
+  id            String   @id @default(uuid())
+  business_name String
+  full_name     String
+  job_id        String?
+  work_experience String?
+  phone         String
+  email         String?
+  other_contacts String?
+  description   String?
+  address       String?
+  location_lat  Float?
+  location_lng  Float?
+  plan          String   @default("free")
+  phone_verified Boolean @default(false)
+  status        String   @default("pending")
+  created_at    DateTime @default(now())
+
+  job    ConstructionJob? @relation(fields: [job_id], references: [id], onDelete: SetNull)
+  photos BusinessPhoto[]
+
+  @@map("businesses")
+}
+
+model BusinessPhoto {
+  id          String   @id @default(uuid())
+  business_id String
+  photo_url   String
+  created_at  DateTime @default(now())
+
+  business Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+
+  @@map("business_photos")
+}
+
+model Advertisement {
+  id            String   @id @default(uuid())
+  business_name String
+  title         String
+  description   String?
+  media_url     String
+  media_type    String   @default("image")
+  link_url      String?
+  phone         String?
+  status        String   @default("pending")
+  amount_paid   Int      @default(0)
+  starts_at     DateTime @default(now())
+  expires_at    DateTime?
+  created_at    DateTime @default(now())
+
+  @@map("advertisements")
+}
+
+model UserComment {
+  id         String   @id @default(uuid())
+  name       String
+  phone      String?
+  text       String
+  rating     Int      @default(5)
+  status     String   @default("pending")
+  created_at DateTime @default(now())
+
+  @@map("user_comments")
+}
+
+model SupportTicket {
+  id         String   @id @default(uuid())
+  name       String
+  phone      String
+  email      String?
+  subject    String
+  category   String   @default("general")
+  priority   String   @default("normal")
+  status     String   @default("open")
+  message    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  replies    TicketReply[]
+
+  @@map("support_tickets")
+}
+
+model TicketReply {
+  id         String   @id @default(uuid())
+  ticket_id  String
+  message    String
+  is_admin   Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@map("ticket_replies")
+}
+
+model Auction {
+  id            String    @id @default(uuid())
+  title         String
+  category      String
+  description   String?
+  phone         String
+  city          String?
+  budget        Int?
+  deadline      DateTime?
+  status        String    @default("open")
+  dashboard_type String   @default("sazeheman")
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  bids          AuctionBid[]
+
+  @@map("auctions")
+}
+
+model AuctionBid {
+  id          String   @id @default(uuid())
+  auction_id  String
+  bidder_name String
+  phone       String
+  price       Int
+  description String?
+  created_at  DateTime @default(now())
+
+  auction Auction @relation(fields: [auction_id], references: [id], onDelete: Cascade)
+
+  @@map("auction_bids")
+}
+
+model Shop {
+  id            String   @id @default(uuid())
+  name          String
+  owner_phone   String
+  description   String?
+  logo_url      String?
+  banner_url    String?
+  plan          String   @default("free")
+  status        String   @default("active")
+  dashboard_type String  @default("sazeheman")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  products      Product[]
+  shopAds       ShopAd[]
+
+  @@map("shops")
+}
+
+model ProductCategory {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  icon       String?
+  created_at DateTime @default(now())
+
+  products   Product[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  shop_id     String
+  category_id String?
+  name        String
+  description String?
+  price       Int
+  image_url   String?
+  stock       Int      @default(0)
+  status      String   @default("active")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  shop      Shop             @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+  category  ProductCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+
+  @@map("products")
+}
+
+model ShopAd {
+  id         String   @id @default(uuid())
+  shop_id    String
+  title      String
+  image_url  String
+  link_url   String?
+  amount_paid Int     @default(0)
+  status     String   @default("active")
+  starts_at  DateTime @default(now())
+  expires_at DateTime?
+  created_at DateTime @default(now())
+
+  shop Shop @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+
+  @@map("shop_ads")
+}

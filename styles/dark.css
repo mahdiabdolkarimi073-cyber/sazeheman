@@ -1,0 +1,27 @@
+:root.dark {
+    --background: #0E0F0F;
+    --primary: #5dd4a8;
+    --container-bright: rgba(255, 255, 255, 0.05);
+    --container-dark: rgba(0, 0, 0, 0.03);
+    --text-color: #EBEBEB;
+    --container-border: rgba(255, 255, 255, 0.05);
+    --red: #C52121;
+    --green: #26CE7A;
+    --sidebar: rgba(0, 0, 0, 0.3);
+    --white-color: var(--background);
+    --dark-color: #ffffff;
+    --container:  #18181b;
+    --border-color1: var(--container-border);
+    --border-color2: var(--container-border);
+
+    /* MANTINE INPUT BG COOLOR */
+    --input-bg: #1a1b1b;
+}
+
+:root.dark *:not([aria-invalid="true"]) {
+    --input-bd: var(--border-color1);
+}
+
+.dark .text-gradient {
+    @apply bg-linear-to-b bg-clip-text text-transparent from-black to-(--primary)
+}

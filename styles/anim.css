@@ -1,0 +1,213 @@
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-35px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+/* 2. Picture Animations: Slide in from sides without touching layout */
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+/* Staggered delays for content elements */
+.animate-fade-in-up-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.animate-fade-in-up-delay-2 {
+  animation-delay: 0.4s;
+}
+
+.animate-fade-in-up-delay-3 {
+  animation-delay: 0.6s;
+}
+
+.animate-fade-in-up-delay-4 {
+  animation-delay: 0.8s;
+}
+
+/* Card Visibility Overrides for Radix UI */
+@media (min-width: 768px) {
+  .rt-Card[style*="display: none"] {
+    display: block !important;
+  }
+}
+
+/* Force card visibility on medium screens and above */
+@media (min-width: 768px) {
+  .rt-Card {
+    display: block !important;
+  }
+}
+
+/* Super Creative Floating Animations */
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  25% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+
+  50% {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+
+  75% {
+    transform: translateY(-12px) rotate(0.5deg);
+  }
+}
+
+@keyframes float-medium {
+
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+
+  33% {
+    transform: translateY(-6px) scale(1.02);
+  }
+
+  66% {
+    transform: translateY(-10px) scale(0.98);
+  }
+}
+
+@keyframes float-fast {
+
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+
+  20% {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  40% {
+    transform: translateY(-8px) scale(0.99);
+  }
+
+  60% {
+    transform: translateY(-6px) scale(1.02);
+  }
+
+  80% {
+    transform: translateY(-12px) scale(0.97);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation Classes */
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 3s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 2.5s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+#big-gear{
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spinCW 8s linear infinite;
+}
+
+#small-gear {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spinCCW 6s linear infinite;
+}
+
+@keyframes spinCW {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes spinCCW {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+
+#Gears:hover #big-gear {
+  animation-duration: 2s;
+}
+
+#Gears:hover #small-gear {
+  animation-duration: 1.5s;
+}

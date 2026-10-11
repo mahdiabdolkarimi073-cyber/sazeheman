@@ -1,0 +1,76 @@
+.mantine-InputWrapper-root {
+  display: flex;
+  gap: 7px;
+  flex-direction: column;
+}
+
+
+.mantine-Input-input:not(textarea, .mantine-PinInput-input) {
+  padding: 1.5em;
+}
+
+.mantine-Input-input.mantine-ColorInput-input {
+  padding: 1.4em;
+}
+
+.mantine-Input-wrapper .mantine-Input-section[data-position=right] {
+  width: auto;
+  padding-left: 1em;
+}
+
+.mantine-Input-wrapper .mantine-Input-section[data-position=left] {
+  width: auto;
+  padding-right: 1em;
+}
+
+.mantine-Input-wrapper .mantine-Input-section[data-position=left]~.mantine-Input-input {
+  padding-right: 3em;
+}
+
+.mantine-Input-wrapper .mantine-Input-section[data-position=right]~.mantine-Input-input {
+  padding-left: 3em;
+}
+
+.mantine-NumberInput-controls svg {
+  position: relative;
+  right: 0.5em;
+}
+
+
+.mantine-Switch-track.mantine-Switch-track:has(:root.dark) {
+  --switch-bg: var(--input-bg);
+}
+
+.mantine-Switch-root *,
+.mantine-Switch-root,
+.mantine-Checkbox-root,
+.mantine-Checkbox-root * {
+  cursor: pointer !important;
+  --label-cursor: pointer;
+}
+
+.mantine-Modal-content {
+  overflow-y: unset;
+}
+
+.mantine-Tabs-tab {
+  transition: all 250ms;
+}
+
+.mantine-Tabs-tab[data-active="true"] {
+  transition-property: none;
+}
+
+.mantine-Tabs-panel,.dash-content > * {
+  animation: fadeIn 400ms ease;
+  transition: all 0.3s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

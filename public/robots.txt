@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block internal system routes
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /_next/
+
+# Sitemap
+Sitemap: https://donofa.com/sitemap.xml

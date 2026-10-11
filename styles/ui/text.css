@@ -1,0 +1,4 @@
+.text-gradient {
+  @apply bg-gradient-to-b bg-clip-text text-transparent from-zinc-950 to-[var(--primary)]
+}
+

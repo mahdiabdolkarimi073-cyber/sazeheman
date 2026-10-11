@@ -1,0 +1,34 @@
+/* DASHBOARD User Dots Button */
+.sidebar-userdots {
+    background: rgb(from var(--text-color) r g b / 0.03);
+    transition: 0.3s ease, scale 0.3s cubic-bezier(0.27, -0.08, 0, 1.65);
+}
+
+.sidebar-userdots:hover {
+    background: rgb(from var(--text-color) r g b / 0.05);
+    scale: 1.1;
+}
+
+.sidebar-userdots:active {
+    background: rgb(from var(--text-color) r g b / 0.06);
+    scale: 0.95;
+}
+/* DASHBOARD User Dots Button */
+
+/* DASHBOARD Sidebar Items */
+.sidebar-item{
+    transition: 0.3s padding cubic-bezier(0.27, -0.08, 0, 1.65);
+}
+.sidebar-item p {
+    transition: 0.3s cubic-bezier(0.27, -0.08, 0, 1.65);
+}
+.sidebar-item:hover {
+    /* background: red; */
+    background: linear-gradient(90deg,transparent 0%, rgb(from var(--text-color) r g b / 0.05) 100%);
+    border-radius: 0.7em;
+    padding-right: 1em;
+}
+.sidebar-item p {
+    scale: 1.1;
+}
+/* DASHBOARD Sidebar Items */
