@@ -1,79 +1,65 @@
 import React from "react";
-import AuthShapeBg, { AuthShapeLineBg } from "@/app/(landing)/auth/AuthShapeBg";
+import Image from "next/image";
 import Logo from "@/components/assets/Logo";
 import { getSession } from "@/lib/cache/session";
 import { Metadata } from "next";
+import Link from "next/link";
 
 async function Layout(props: any) {
     const { user } = await getSession();
-    // if (user) redirect("/dashboard");
 
     return (
-        <div>
-            <div className={'flex'}>
-                <div className={'grow'}>
+        <div dir="rtl" className="min-h-screen overflow-x-hidden bg-[#F7F8F6] lg:flex lg:flex-row-reverse">
+            <section className="relative min-h-[360px] overflow-hidden bg-[#173D35] sm:min-h-[440px] lg:min-h-screen lg:w-[52%]">
+                <Image
+                    src="/images/hero/Construction_Plans_at_Sunset.png"
+                    alt="کلاه ایمنی و نقشه‌های ساختمانی در زمان غروب"
+                    fill
+                    priority
+                    sizes="(max-width: 1023px) 100vw, 52vw"
+                    className="object-cover object-[58%_center]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#173D35]/65 via-[#173D35]/10 to-[#173D35]/90" />
 
-                    <div className={'flex justify-center items-center min-h-screen p-5 flex-col gap-3'}>
-                        <div className={'flex xl:hidden justify-center items-center h-28'}>
-                            <Logo width={120} />
-                        </div>
-                        {props.children}
+                <div className="relative z-10 flex min-h-[360px] flex-col p-6 sm:min-h-[440px] sm:p-8 lg:min-h-screen lg:p-10">
+                    <div className="flex items-center justify-between">
+                        <Logo className="[&>p]:!text-white" />
+                        <Link
+                            href="/"
+                            className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/30 bg-black/10 px-3 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/15"
+                        >
+                            بازگشت به خانه
+                        </Link>
                     </div>
-                </div>
-                <div
-                    className="w-full max-w-[30vw] 2xl:max-w-[35vw] hidden lg:flex relative min-h-screen items-end justify-end flex-col overflow-hidden">
-                    <div className={'absolute top-0 right-0 p-7 z-90'}>
-                        <Logo id={'LayoutLogo'} />
-                    </div>
-                    <div className={'absolute left-0 top-0 h-full w-full flex justify-center items-center'}>
-                        <AuthShapeBg width={undefined} height={undefined} style={{
-                            width: "100%",
-                            height: "100vh",
-                            zIndex: 1
-                        }} />
 
-                        <div
-                            className={'absolute left-0 top-0 bottom-36 my-auto h-full w-full flex justify-center items-center'}
-                            style={{
-                                zIndex: 0
-                            }}>
-                            <AuthShapeLineBg width={undefined} height={undefined} style={{
-                                width: "100%",
-                                height: "50vh"
-                            }} />
-                        </div>
-                    </div>
-                    <div className={'relative w-full p-7 flex justify-center flex-col items-start'} style={{
-                        minHeight: "30vh",
-                        zIndex: 4
-                    }}>
-                        <div className={'absolute top-0 flex left-0 right-0 mx-auto justify-center'} style={{
-                            width: "100%",
-                            height: "100%",
-                            zIndex: -1
-                        }}>
-                            <div style={{
-                                background: "linear-gradient(45deg,  var(--secondary,#BBF451) -30%,var(--primary) 100%)",
-                                filter: "blur(6vw)"
-                            }} className={'w-full h-full '} />
-                        </div>
-                        <h2 className={'text-3xl text-gradient font-extrabold p-1'}>مورد علاقه بهترینا</h2>
-                        <p className={'text-sm mt-2 text-justify'}>
-                            سازه من یک پلتفرم جامع برای ارتباط مستقیم سازندگان با پیمانکاران، مهندسین و فروشندگان مصالح ساختمانی است.
-                            با سازه من می‌توانید پروژه ساختمانی خود را ثبت کرده و بر روی نقشه نمایش دهید،
-                            خدمات مورد نیازتان را مشخص کنید و در کوتاه‌ترین زمان با متخصصان مرتبط ارتباط بگیرید.
-                            سرعت، شفافیت و کاهش هزینه‌های ساخت، سازه من را به انتخابی هوشمندانه در صنعت ساختمان تبدیل کرده است.
+                    <div className="mt-auto max-w-xl pb-2 sm:pb-4 lg:pb-8">
+                        <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm sm:text-sm">
+                            <span className="h-2 w-2 rounded-full bg-[#36B98A]" />
+                            پلتفرم جامع صنعت ساختمان
+                        </span>
+                        <h2 className="mb-3 text-2xl font-extrabold leading-tight text-white sm:text-3xl lg:text-5xl">
+                            ساخت سریع و دقیق
+                            <br />
+                            با هزینه کم را تجربه کن
+                        </h2>
+                        <p className="max-w-lg text-sm leading-7 text-white/85 sm:text-base">
+                            سازه من پلتفرمی جامع برای ارتباط مستقیم سازندگان با پیمانکاران، مهندسین و فروشندگان مصالح ساختمانی است.
                         </p>
-
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <section className="flex min-h-[calc(100vh-360px)] flex-1 flex-col bg-[#F7F8F6] lg:min-h-screen lg:w-[48%]">
+                <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-10 lg:px-12 xl:px-20">
+                    {props.children}
+                </div>
+            </section>
         </div>
     );
 }
 
 export const metadata: Metadata = {
     title: "ورود"
-}
+};
 
 export default Layout;

@@ -47,15 +47,24 @@ function Page() {
     }, [code]);
 
     return (
-        <div className="flex flex-col gap-4 justify-center max-w-sm">
-            <h3 className="text-2xl text-center lg:text-start font-semibold">تایید شماره تلفن</h3>
-            <p className="opacity-60 text-center lg:text-start">
-                کد ۶ رقمی ارسال شده به شماره <span dir="ltr">{phone}</span> را وارد کنید
-            </p>
-            <p className="text-xs text-primary text-center lg:text-start">
-                (حالت تستی: هر کدی را وارد کنید تا تایید شود)
-            </p>
-            <div className="flex items-stretch">
+        <div className="w-full max-w-lg" dir="rtl">
+            <div className="text-right mb-8">
+                <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full bg-[#E7F5EE] text-[#36B98A] text-xs font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#36B98A]" />
+                    شغل من
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#173D35] mb-3 leading-tight">
+                    تایید شماره تلفن
+                </h1>
+                <p className="text-sm text-[#6B7771]">
+                    کد ۶ رقمی ارسال شده به شماره <span dir="ltr">{phone}</span> را وارد کنید
+                </p>
+                <p className="text-xs text-[#36B98A] mt-2">
+                    (حالت تستی: هر کدی را وارد کنید تا تایید شود)
+                </p>
+            </div>
+
+            <div className="flex items-stretch mb-8">
                 <PinInput
                     disabled={checking}
                     length={6}
@@ -71,26 +80,30 @@ function Page() {
                     className="w-full justify-stretch!"
                 />
             </div>
-            {sec > 0 ? (
-                <p className="text-center opacity-70 text-sm">
-                    دریافت مجدد {sec.toLocaleString('fa')} ثانیه
-                </p>
-            ) : (
-                <CustomButton
-                    loading={sending}
-                    onClick={handleResend}
-                    className="small p-1! w-26 mx-auto"
+
+            <div className="flex flex-col gap-5">
+                {sec > 0 ? (
+                    <p className="text-center text-[#6B7771] text-sm">
+                        دریافت مجدد {sec.toLocaleString('fa')} ثانیه
+                    </p>
+                ) : (
+                    <CustomButton
+                        loading={sending}
+                        onClick={handleResend}
+                        className="small p-1! w-28 mx-auto"
+                    >
+                        ارسال مجدد
+                    </CustomButton>
+                )}
+                <Button
+                    radius="xl"
+                    loading={checking}
+                    disabled={code.length !== 6}
+                    size="lg"
                 >
-                    ارسال مجدد
-                </CustomButton>
-            )}
-            <Button
-                radius="xl"
-                loading={checking}
-                disabled={code.length !== 6}
-            >
-                تایید
-            </Button>
+                    تایید
+                </Button>
+            </div>
         </div>
     );
 }

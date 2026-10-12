@@ -13,11 +13,11 @@ function Page(props: any) {
     const { token } = use(props.searchParams) as any;
     const router = useRouter();
 
-    const setUser = async ()=>{
+    const setUser = async () => {
         window.userToken = token;
         const res = await api("/profile/me")
-            .then(e=>e.data)
-            .catch(()=>undefined);
+            .then(e => e.data)
+            .catch(() => undefined);
         if (!res || !res.user) {
             window.alert("خطا در دریافت اطلاعات");
             router.push("/auth");
@@ -25,7 +25,7 @@ function Page(props: any) {
         }
         const user = res.user;
         setUserToken(token)
-            .then(async ()=>{
+            .then(async () => {
                 await refetchUser()
                 const firstTime = !user?.nickname || !user?.slug;
                 if (firstTime) {
@@ -43,9 +43,11 @@ function Page(props: any) {
     }, []);
 
     return (
-        <div className="w-full max-w-md">
-            <h3 className="text-center text-2xl  font-medium mb-3">درحال بارگذاری...</h3>
-            <Progress value={100} animated />
+        <div className="w-full max-w-lg" dir="rtl">
+            <div className="text-right mb-6">
+                <h3 className="text-xl font-medium text-[#173D35] mb-4">درحال بارگذاری...</h3>
+            </div>
+            <Progress value={100} animated color="#36B98A" size="lg" radius="xl" />
         </div>
     )
 }
