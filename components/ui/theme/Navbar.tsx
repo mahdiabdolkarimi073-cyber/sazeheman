@@ -88,7 +88,7 @@ const Header = (props: {
             className={`py-3 ${isFixed ? "fixed" : "sticky"} w-full top-0 z-20 transition-all duration-500 ease-out ${
                 isScrolled
                     ? 'bg-white/95 dark:bg-[#0E0F0F]/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(23,61,53,0.12)] border-b border-[rgba(23,61,53,0.12)]'
-                    : pathname === '/' ? 'bg-[#173D35]/80 backdrop-blur-sm text-white' : 'bg-transparent'
+                    : pathname === '/' ? 'bg-[#173D35]/85 backdrop-blur-sm text-white' : 'bg-transparent'
             } ${isMobileMenuOpen
                 ? 'md:bg-transparent bg-container! open'
                 : 'bg-transparent'
@@ -111,8 +111,8 @@ const Header = (props: {
                                         href={item.href}
                                         className={`relative! px-4! py-2! rounded-full! text-sm! font-medium! transition-all! duration-300! ${
                                             isActive
-                                                ? 'bg-primary/15! text-primary-dark! backdrop-blur-sm!'
-                                                : 'opacity-65! hover:opacity-100! hover:bg-primary/8!'
+                                                ? 'bg-[#36B98A]/25! text-white! backdrop-blur-sm!'
+                                                : 'opacity-70! hover:opacity-100! hover:bg-white/10!'
                                         }`}
                                         style={{
                                             fontWeight: isActive ? 700 : 500,
@@ -157,8 +157,8 @@ const Header = (props: {
                                             }}
                                             className={`block px-5 py-3 text-base font-medium rounded-2xl transition-all duration-300 ${
                                                 isActive
-                                                    ? 'bg-primary/15! text-primary-dark! font-bold!'
-                                                    : 'text-black/70! hover:bg-primary/8! hover:text-primary-dark!'
+                                                    ? 'bg-[#36B98A]/15! text-[#173D35]! font-bold!'
+                                                    : 'text-[#252C2A]/70! hover:bg-[#36B98A]/8! hover:text-[#173D35]!'
                                             }`}
                                             style={{
                                                 fontWeight: isActive ? 700 : 500,

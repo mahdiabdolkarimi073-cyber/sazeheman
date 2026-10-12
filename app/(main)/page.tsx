@@ -4,8 +4,6 @@ import ConstructionCategories from "@/components/ui/home/ConstructionCategories"
 import HowItWorks from "@/components/ui/home/HowItWorks";
 import TendersSection from "@/components/ui/home/TendersSection";
 import FeaturedProfessionals from "@/components/ui/home/FeaturedProfessionals";
-import TrustBenefits from "@/components/ui/home/TrustBenefits";
-import Comments from "@/components/ui/home/comments/Comments";
 import FAQ from "@/components/ui/home/FAQ";
 import FeedbackSection from "@/components/ui/home/FeedbackSection";
 import { getAllPlans } from "@/app/(landing)/dashboard/subscription/PlanEnums";
@@ -28,18 +26,16 @@ export default async function Home() {
             <div id="map">
                 <MainMap />
             </div>
-            <HowItWorks />
+            <FeaturedProfessionals />
             <div id="tenders">
                 <TendersSection />
             </div>
-            <FeaturedProfessionals />
-            <TrustBenefits />
+            <HowItWorks />
             <div id="plans">
                 <CacheUpdate cache={{ plans }}>
                     <PlanList />
                 </CacheUpdate>
             </div>
-            <Comments />
             <div id="faq">
                 <FAQ />
             </div>

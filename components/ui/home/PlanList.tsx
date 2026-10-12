@@ -22,8 +22,8 @@ function PlanList(props: { white?: boolean }) {
             <div className="relative z-10 flex flex-col gap-4 items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary-dark text-sm font-medium mb-4">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#36B98A]/10 border border-[#36B98A]/20 text-[#173D35] text-sm font-medium mb-4">
+                        <span className="w-2 h-2 rounded-full bg-[#36B98A] animate-pulse" />
                         تعرفه‌ها
                     </div>
                     <h3 className="text-3xl lg:text-4xl font-extrabold max-w-md text-center mb-3">
@@ -34,7 +34,7 @@ function PlanList(props: { white?: boolean }) {
                     </p>
                 </div>
 
-                <Link href="/plans">
+                <Link href="/dashboard/subscription">
                     <CustomButton variant="soft" className="px-6! py-2.5! mb-6">
                         مشاهده کامل تعرفه‌ها
                     </CustomButton>

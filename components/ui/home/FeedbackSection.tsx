@@ -86,7 +86,7 @@ function FeedbackSection() {
 
             <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary-dark text-sm font-medium mb-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#36B98A]/10 border border-[#36B98A]/20 text-[#173D35] text-sm font-medium mb-4">
                         <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                         ارتباط با ما
                     </div>
@@ -104,8 +104,8 @@ function FeedbackSection() {
                         onClick={() => { setTab('comments'); loadComments(); }}
                         className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                             tab === 'comments'
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'bg-container text-black/70 hover:bg-primary/10 hover:text-primary-dark border border-b2'
+                                ? 'bg-[#36B98A] text-white shadow-lg shadow-[#36B98A]/20'
+                                : 'bg-container text-black/70 hover:bg-[#36B98A]/10 hover:text-[#173D35] border border-b2'
                         }`}
                     >
                         نظرات کاربران
@@ -114,8 +114,8 @@ function FeedbackSection() {
                         onClick={() => setTab('ticket')}
                         className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                             tab === 'ticket'
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'bg-container text-black/70 hover:bg-primary/10 hover:text-primary-dark border border-b2'
+                                ? 'bg-[#36B98A] text-white shadow-lg shadow-[#36B98A]/20'
+                                : 'bg-container text-black/70 hover:bg-[#36B98A]/10 hover:text-[#173D35] border border-b2'
                         }`}
                     >
                         ثبت تیکت
@@ -126,7 +126,7 @@ function FeedbackSection() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="glass-card rounded-3xl p-6">
                             <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                                <span className="w-1.5 h-6 rounded-full bg-primary" />
+                                <span className="w-1.5 h-6 rounded-full bg-[#36B98A]" />
                                 ثبت نظر
                             </h3>
                             <div className="flex flex-col gap-4">
@@ -164,10 +164,10 @@ function FeedbackSection() {
                         <div className="glass-card rounded-3xl p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-bold text-lg flex items-center gap-2">
-                                    <span className="w-1.5 h-6 rounded-full bg-primary" />
+                                    <span className="w-1.5 h-6 rounded-full bg-[#36B98A]" />
                                     نظرات اخیر
                                 </h3>
-                                <button onClick={loadComments} className="text-xs text-primary-dark font-medium hover:opacity-70 transition-opacity">
+                                <button onClick={loadComments} className="text-xs text-[#36B98A] font-medium hover:opacity-70 transition-opacity">
                                     {loadingComments ? "در حال بارگذاری..." : "بارگذاری"}
                                 </button>
                             </div>

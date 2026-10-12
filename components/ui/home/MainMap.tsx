@@ -45,12 +45,12 @@ function MainMap() {
     ), [filteredSpots, mapInit]);
 
     return (
-        <section className="w-full bg-[#f7f8f6] border-y border-[#e5ebe6] py-20" aria-labelledby="map-title">
+        <section className="w-full bg-[#f7f8f6] border-y border-[#e5ebe6] py-16 lg:py-20" aria-labelledby="map-title">
             <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
                     <div>
-                        <span className="text-sm font-bold text-primary">کشف خدمات نزدیک شما</span>
-                        <h2 id="map-title" className="text-2xl sm:text-3xl font-bold mt-2 text-[#252c2a]">متخصصان تأییدشده روی نقشه</h2>
+                        <span className="text-sm font-bold text-[#36B98A]">کشف خدمات نزدیک شما</span>
+                        <h2 id="map-title" className="text-xl sm:text-2xl lg:text-3xl font-bold mt-2 text-[#252C2A]">متخصصان تأییدشده روی نقشه</h2>
                         <p className="text-base text-[#6b7771] mt-2 leading-relaxed">فهرست نمایشی برای آشنایی با تجربه جست‌وجوی سازه‌همان؛ داده‌های زنده پس از اتصال backend نمایش داده می‌شوند.</p>
                     </div>
                     <span className="shrink-0 text-sm px-3 py-2 rounded-lg bg-white text-[#6b7771] border border-[#e5ebe6]">داده نمایشی</span>
@@ -60,26 +60,26 @@ function MainMap() {
                     <div className="flex flex-col min-h-0">
                         <TextInput label="جست‌وجو در متخصصان" value={search} onChange={(event) => setSearch(event.currentTarget.value)} placeholder="نام شرکت، خدمت یا تخصص..." size="md" className="mb-4" />
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <p className="text-sm text-[#6b7771]">{filteredSpots.length.toLocaleString('fa')} متخصص نمایشی</p>
+                            <div className="h-2 w-2 rounded-full bg-[#36B98A]" />
+                            <p className="text-sm text-[#6B7771]">{filteredSpots.length.toLocaleString('fa')} متخصص نمایشی</p>
                         </div>
                         <div className="max-h-[520px] overflow-y-auto pl-1 flex flex-col gap-3">
                             {filteredSpots.length === 0 && <p className="text-sm text-[#6b7771] text-center py-10">موردی با این جست‌وجو پیدا نشد.</p>}
                             {filteredSpots.map((spot) => {
                                 const selected = selectedSpot?.title === spot.title;
-                                return <button type="button" key={spot.title} onClick={() => { setSelectedSpot(spot); setMapInit((previous) => ({ ...previous, center: spot.location, zoom: 15 })); }} className={`w-full text-right p-4 rounded-xl border transition-colors ${selected ? 'border-primary bg-[#e7f5ee]' : 'border-[#e5ebe6] bg-white hover:border-primary/50'}`}>
+                                return <button type="button" key={spot.title} onClick={() => { setSelectedSpot(spot); setMapInit((previous) => ({ ...previous, center: spot.location, zoom: 15 })); }} className={`w-full text-right p-4 rounded-xl border transition-colors ${selected ? 'border-[#36B98A] bg-[#E7F5EE]' : 'border-[#e5ebe6] bg-white hover:border-[#36B98A]/50'}`}>
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
                                             <h3 className="font-bold text-base text-[#252c2a]">{spot.title}</h3>
                                             <p className="text-sm text-[#6b7771] mt-1">{spot.user}</p>
                                         </div>
-                                        <span className="shrink-0 flex items-center gap-1 text-xs font-bold text-primary"><span className="w-2 h-2 rounded-full bg-primary" /> تأییدشده</span>
+                                        <span className="shrink-0 flex items-center gap-1 text-xs font-bold text-[#36B98A]"><span className="w-2 h-2 rounded-full bg-[#36B98A]" /> تأییدشده</span>
                                     </div>
                                     <div className="flex items-center justify-between mt-4">
-                                        <span className="text-sm font-medium text-primary">{spot.category}</span>
+                                        <span className="text-sm font-medium text-[#36B98A]">{spot.category}</span>
                                         <span className="text-xs text-[#6b7771]">نمایش روی نقشه ←</span>
                                     </div>
-                                </button>;
+                                </button>
                             })}
                         </div>
                     </div>

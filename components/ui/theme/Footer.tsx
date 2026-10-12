@@ -42,7 +42,7 @@ function Footer(props: { footerBg?: string }) {
         <div className={'relative'}>
             {/* Gradient background fade */}
             <div className={'absolute bottom-0 w-full left-0 -z-2'} style={{
-                background: "linear-gradient(180deg, transparent 0%, rgba(93,212,168,0.08) 100%)",
+                background: "linear-gradient(180deg, transparent 0%, rgba(54, 185, 138, 0.08) 100%)",
                 height: `var(--footer-bg, ${props.footerBg || "130%"})`
             }}/>
             <div className={'container mx-auto mt-10'}>
@@ -54,7 +54,7 @@ function Footer(props: { footerBg?: string }) {
                     <div
                         className={'absolute z-0 top-0 left-0 h-1 w-full'}
                         style={{
-                            background: "linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 50%, var(--primary-dark) 100%)",
+                            background: "linear-gradient(90deg, var(--brand-light-mint) 0%, var(--brand-emerald) 50%, var(--brand-deep-green) 100%)",
                         }}
                     />
                     {/* CTA section */}
@@ -116,7 +116,7 @@ function Footer(props: { footerBg?: string }) {
                                 <div key={index} className={'flex flex-col gap-2'}>
                                     <p className={'font-medium mb-1'}>{link.title}</p>
                                     {link.links.map((link, index) => (
-                                        <Link className={'text-black! opacity-60! hover:text-primary-dark! transition-colors'} key={index} href={link.href}>
+                                        <Link className={'text-black! opacity-60! hover:text-[#36B98A]! transition-colors'} key={index} href={link.href}>
                                             <p>{link.label}</p>
                                         </Link>
                                     ))}

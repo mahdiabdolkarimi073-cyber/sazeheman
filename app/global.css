@@ -19,7 +19,7 @@
   --white-color: #ffffff;
   --text-color: #000000;
   --dark-color: #000000;
-  --container: #f4f9f6;
+  --container: #F7F8F6;
   --border-color1: #d1e7dc;
   --border-color2: #e8f4ee;
 }
@@ -40,6 +40,11 @@
   --color-b1: var(--border-color1);
   --color-b2: var(--border-color2);
   --color-input: var(--input-bg);
+  --color-primary-dark: var(--brand-deep-green);
+  --color-primary-light: var(--brand-light-mint);
+  --color-charcoal: var(--brand-charcoal);
+  --color-off-white: var(--brand-off-white);
+  --color-secondary-text: var(--brand-secondary-text);
   --input-bg: var(--color-white);
 }
 
@@ -108,7 +113,7 @@ thead::before {
   right: 0;
   width: 100%;
   height: 100%;
-  background: rgba(93, 212, 168, 0.04);
+  background: rgba(54, 185, 138, 0.04);
   z-index: -1;
   border-radius: 8px;
 }
@@ -122,7 +127,7 @@ p {
 }
 
 .b-dash {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' stroke='%235dd4a8' stroke-width='3' stroke-dasharray='15 15' rx='12'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' stroke='%2336B98A' stroke-width='3' stroke-dasharray='15 15' rx='12'/%3E%3C/svg%3E");
 }
 
 ::-webkit-scrollbar {
@@ -172,18 +177,18 @@ p {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(93, 212, 168, 0.2);
-  box-shadow: 0 8px 32px rgba(93, 212, 168, 0.08);
+  border: 1px solid rgba(54, 185, 138, 0.2);
+  box-shadow: 0 8px 32px rgba(23, 61, 53, 0.08);
 }
 
 .dark .glass-card {
   background: rgba(24, 24, 27, 0.65);
-  border: 1px solid rgba(93, 212, 168, 0.15);
+  border: 1px solid rgba(54, 185, 138, 0.15);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .glow-primary {
-  box-shadow: 0 0 40px rgba(93, 212, 168, 0.15);
+  box-shadow: 0 0 40px rgba(54, 185, 138, 0.15);
 }
 
 .text-gradient {
@@ -244,19 +249,19 @@ p {
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(93, 212, 168, 0.15);
+  box-shadow: 0 12px 40px rgba(54, 185, 138, 0.15);
 }
 
 .green-mesh-bg {
   background-image:
-    radial-gradient(at 20% 20%, rgba(93, 212, 168, 0.12) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(168, 236, 204, 0.10) 0px, transparent 50%),
-    radial-gradient(at 0% 80%, rgba(93, 212, 168, 0.08) 0px, transparent 50%);
+    radial-gradient(at 20% 20%, rgba(54, 185, 138, 0.12) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(231, 245, 238, 0.10) 0px, transparent 50%),
+    radial-gradient(at 0% 80%, rgba(54, 185, 138, 0.08) 0px, transparent 50%);
 }
 
 .dark .green-mesh-bg {
   background-image:
-    radial-gradient(at 20% 20%, rgba(93, 212, 168, 0.06) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(168, 236, 204, 0.04) 0px, transparent 50%),
-    radial-gradient(at 0% 80%, rgba(93, 212, 168, 0.04) 0px, transparent 50%);
+    radial-gradient(at 20% 20%, rgba(54, 185, 138, 0.06) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(231, 245, 238, 0.04) 0px, transparent 50%),
+    radial-gradient(at 0% 80%, rgba(54, 185, 138, 0.04) 0px, transparent 50%);
 }

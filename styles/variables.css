@@ -32,22 +32,30 @@
   --line-height-relaxed: 1.625;
   --line-height-loose: 2;
 
-  /* Soft Green Palette */
-  --primary-origin: #5dd4a8;
-  --primary: #5dd4a8;
-  --primary-rgb: 93, 212, 168;
-  --primary-rgb-origin: 93, 212, 168;
-  --primary-light: #a8eccc;
-  --primary-dark: #3bb888;
-  --primary-darker: #2a9e6f;
-  --secondary: hsl(from var(--primary) calc(h - 15) s l);
+  /* Sazeheman Brand Palette */
+  --primary-origin: #36B98A;
+  --primary: #36B98A;
+  --primary-rgb: 54, 185, 138;
+  --primary-rgb-origin: 54, 185, 138;
+  --primary-light: #E7F5EE;
+  --primary-dark: #173D35;
+  --primary-darker: #0F2A24;
+  --secondary: #E7F5EE;
 
   /* Accent colors */
-  --accent: #7dd3b8;
-  --accent-light: #b8e8d5;
-  --success: #4ade80;
+  --accent: #36B98A;
+  --accent-light: #E7F5EE;
+  --success: #36B98A;
   --warning: #fbbf24;
   --error: #f87171;
+
+  /* Brand extended */
+  --brand-deep-green: #173D35;
+  --brand-emerald: #36B98A;
+  --brand-light-mint: #E7F5EE;
+  --brand-off-white: #F7F8F6;
+  --brand-charcoal: #252C2A;
+  --brand-secondary-text: #6B7771;
 }
 
 .text-green-500 {

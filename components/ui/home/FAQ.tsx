@@ -42,7 +42,7 @@ function Faq() {
             <div className={'relative z-10 grid grid-cols-1 lg:grid-cols-2 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'}>
                 <div className={'flex flex-col gap-5 items-center lg:items-start p-4'}>
                     <div>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary-dark text-sm font-medium">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#36B98A]/10 border border-[#36B98A]/20 text-[#173D35] text-sm font-medium">
                             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                             سازه من رو بهتر بشناس
                         </div>
@@ -81,14 +81,14 @@ function Question(props: { title: string, content: string }) {
     const [open, setOpen] = useState(false);
 
     return (
-        <div className={'p-4 bg-container rounded-2xl border border-b2 hover:border-primary/20 transition-all duration-300'} style={{
+        <div className={'p-4 bg-container rounded-2xl border border-b2 hover:border-[#36B98A]/20 transition-all duration-300'} style={{
             transition: "all .3s"
         }}>
             <div className="flex items-center justify-between cursor-pointer gap-3" onClick={() => setOpen(e => !e)}>
                 <p className={'font-medium text-sm sm:text-base'}>{props.title}</p>
                 <div style={{
                     transform: `rotate(${open ? "0deg" : "45deg"})`,
-                    color: open ? "var(--primary)" : "inherit"
+                    color: open ? "#36B98A" : "inherit"
                 }} className={'transition-all shrink-0'}>
                     <IconX/>
                 </div>
