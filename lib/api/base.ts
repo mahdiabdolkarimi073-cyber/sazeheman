@@ -29,9 +29,14 @@ export async function api<
     }
 
     const isAbsolute = path.startsWith("http:") || path.startsWith("https:");
-    let url = new URL(isAbsolute ? path : VARS.BACKEND_URL);
-    if (!isAbsolute)
-        url.pathname += path;
+    const backendUrl = VARS.BACKEND_URL;
+    let url: URL;
+    if (isAbsolute) {
+        url = new URL(path);
+    } else {
+        const base = typeof window !== 'undefined' ? window.location.origin : (VARS.FRONTEND_URL || "http://localhost:3000");
+        url = new URL(base + (backendUrl.startsWith("/") ? backendUrl : "/" + backendUrl) + (path.startsWith("/") ? path : "/" + path));
+    }
     const method = _method || "GET";
     const isJson = typeof body === 'object' && !(body instanceof FormData);
 
@@ -64,7 +69,7 @@ export async function api<
         url = convertToIRUrl(url);
     }
 
-    const res = await fetch(url, {
+const res = await fetch(url, {
         method,
         body: method !== "GET" && body ? isJson ? JSON.stringify(body) : body : undefined,
         headers: {

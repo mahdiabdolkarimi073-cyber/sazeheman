@@ -10,18 +10,18 @@ async function Layout(props: any) {
 
     return (
         <div dir="rtl" className="min-h-screen overflow-x-hidden bg-[#F7F8F6] lg:flex lg:flex-row-reverse">
-            <section className="relative min-h-[360px] overflow-hidden bg-[#173D35] sm:min-h-[440px] lg:min-h-screen lg:w-[52%]">
+            <section className="relative min-h-[320px] overflow-hidden bg-[#173D35] sm:min-h-[400px] lg:min-h-screen lg:w-[60%]">
                 <Image
                     src="/images/hero/Construction_Plans_at_Sunset.png"
                     alt="کلاه ایمنی و نقشه‌های ساختمانی در زمان غروب"
                     fill
                     priority
-                    sizes="(max-width: 1023px) 100vw, 52vw"
-                    className="object-cover object-[58%_center]"
+                    sizes="(max-width: 1023px) 100vw, 60vw"
+                    className="object-cover object-[40%_center]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#173D35]/65 via-[#173D35]/10 to-[#173D35]/90" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
 
-                <div className="relative z-10 flex min-h-[360px] flex-col p-6 sm:min-h-[440px] sm:p-8 lg:min-h-screen lg:p-10">
+                <div className="relative z-10 flex min-h-[320px] flex-col p-6 sm:min-h-[400px] sm:p-8 lg:min-h-screen lg:p-10">
                     <div className="flex items-center justify-between">
                         <Logo className="[&>p]:!text-white" />
                         <Link
@@ -49,8 +49,8 @@ async function Layout(props: any) {
                 </div>
             </section>
 
-            <section className="flex min-h-[calc(100vh-360px)] flex-1 flex-col bg-[#F7F8F6] lg:min-h-screen lg:w-[48%]">
-                <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-10 lg:px-12 xl:px-20">
+            <section className="flex min-h-[calc(100vh-320px)] flex-1 flex-col bg-[#F7F8F6] lg:min-h-screen lg:w-[40%]">
+                <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-10 lg:px-12 xl:px-16">
                     {props.children}
                 </div>
             </section>

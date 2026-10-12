@@ -22,28 +22,34 @@ declare global {
 }
 
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_PUSHER_HOST) {
-    window.Pusher = Pusher;
-    window.EchoReverb = new Echo({
-        broadcaster: "reverb",
-        key: process.env.NEXT_PUBLIC_PUSHER_TOKEN,
-        wsHost: convertToIRUrl(process.env.NEXT_PUBLIC_PUSHER_HOST, true),
-        wsPort: 443,
-        wssPort: 443,
-        forceTLS: true,
-        enabledTransports: ["ws", "wss"],
-        authEndpoint: convertToIRUrl(`${new URL(VARS.BACKEND_URL).origin}/api/broadcasting/auth`),
-        auth: {
-            headers: {
-                Authorization: `Bearer ${window.userToken || "unauthenticated"}`, // Get from your auth state
+    try {
+        window.Pusher = Pusher;
+        const pusherHost = convertToIRUrl(process.env.NEXT_PUBLIC_PUSHER_HOST, true);
+        const backendOrigin = typeof window !== 'undefined' ? window.location.origin : (VARS.FRONTEND_URL || "http://localhost:3000");
+        window.EchoReverb = new Echo({
+            broadcaster: "reverb",
+            key: process.env.NEXT_PUBLIC_PUSHER_TOKEN || "",
+            wsHost: pusherHost,
+            wsPort: 443,
+            wssPort: 443,
+            forceTLS: true,
+            enabledTransports: ["ws", "wss"],
+            authEndpoint: backendOrigin + "/api/broadcasting/auth",
+            auth: {
+                headers: {
+                    Authorization: `Bearer ${window.userToken || "unauthenticated"}`,
+                },
             },
-        },
-    });
-    window.EchoReverb.connector.pusher.connection.bind(
-        "state_change",
-        (states: any) => {
-            console.log("[ECHO] Connection state:", states.current);
-        }
-    );
+        });
+        window.EchoReverb.connector.pusher.connection.bind(
+            "state_change",
+            (states: any) => {
+                console.log("[ECHO] Connection state:", states.current);
+            }
+        );
+    } catch (e) {
+        console.warn("[ECHO] Failed to initialize:", e);
+    }
 }
 
 export function listenToEcho(event: string, func: (msg: any) => void) {

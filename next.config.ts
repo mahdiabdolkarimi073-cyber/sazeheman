@@ -20,25 +20,7 @@ const nextConfig: NextConfig = {
         ]
     },
     async rewrites() {
-        const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api";
-        return [
-            {
-                source: "/sitemap.xml",
-                destination: backend + "/sitemaps",
-            },
-            {
-                source: "/posts_sitemap.xml",
-                destination: backend + "/sitemaps/posts",
-            },
-            {
-                source: "/pages_sitemap.xml",
-                destination: backend + "/sitemaps/pages",
-            },
-            {
-                source: "/creators_sitemap.xml",
-                destination: backend + "/sitemaps/creators",
-            },
-        ];
+        return [];
     },
 };
 

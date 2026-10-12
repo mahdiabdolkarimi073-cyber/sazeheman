@@ -5,7 +5,6 @@ import {usePathname, useRouter} from "next/navigation";
 import {useEffect} from "react";
 import {closeAllModals} from "@mantine/modals";
 import "./built-in-override";
-import {VARS} from "@/lib/VARS";
 import {UserType} from "@/lib/hooks/useUser";
 
 declare global {
@@ -31,7 +30,7 @@ declare global {
 }
 
 if (typeof window !== "undefined") {
-    window.backendUrl = VARS.BACKEND_URL || "https://unknown.backend";
+    window.backendUrl = "/api";
     window.showModal = showModal;
 }
 
