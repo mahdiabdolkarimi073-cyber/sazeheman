@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isDevMode } from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
     if (req.method !== "POST") {
@@ -15,6 +16,17 @@ export default async function (req: NextRequest) {
             message: "شماره تلفن و کد الزامی است",
             status: false,
         }, { status: 400 });
+    }
+
+    if (isDevMode()) {
+        await prisma.business.updateMany({
+            where: { phone },
+            data: { phone_verified: true },
+        }).catch(() => {});
+        return NextResponse.json({
+            message: "شماره تایید شد (حالت توسعه)",
+            status: true,
+        });
     }
 
     const now = new Date();

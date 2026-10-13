@@ -1,9 +1,13 @@
 'use server';
 
 export async function getStates() {
-    return fetch("https://iran-locations-api.ir/api/v1/fa/states")
-        .then(res => res.json())
-        .then(res => res as {
+    try {
+        const res = await fetch("https://iran-locations-api.ir/api/v1/fa/states", {
+            signal: AbortSignal.timeout(5000),
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data as {
             name: string
             center: string
             latitude: string
@@ -11,16 +15,28 @@ export async function getStates() {
             landlinePrefix: string
             carLicencePlates: Array<string>
             id: number
-        }[])
+        }[];
+    } catch (e) {
+        console.error("[getStates] Failed to fetch states:", e instanceof Error ? e.message : e);
+        return [];
+    }
 }
 
 export async function getCities(id: string) {
-    return fetch("https://iran-locations-api.ir/api/v1/fa/cities?state_id="+id)
-        .then(res => res.json())
-        .then(res => res as {
+    try {
+        const res = await fetch("https://iran-locations-api.ir/api/v1/fa/cities?state_id=" + id, {
+            signal: AbortSignal.timeout(5000),
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data as {
             name: string
             latitude: string
             longitude: string,
             id: number
-        }[])
+        }[];
+    } catch (e) {
+        console.error("[getCities] Failed to fetch cities:", e instanceof Error ? e.message : e);
+        return [];
+    }
 }

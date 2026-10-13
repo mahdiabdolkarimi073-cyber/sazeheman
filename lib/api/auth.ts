@@ -85,10 +85,11 @@ export async function generateToken(): Promise<string> {
 }
 
 export async function createOrUpdateUser(phone: string, accountType: string = "sazeheman") {
+  const phoneStr = String(phone).trim();
   const token = await generateToken();
   const tokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-  const existing = await prisma.user.findUnique({ where: { phone } });
+  const existing = await prisma.user.findUnique({ where: { phone: phoneStr } });
 
   if (existing) {
     const updated = await prisma.user.update({
@@ -105,7 +106,7 @@ export async function createOrUpdateUser(phone: string, accountType: string = "s
 
   return prisma.user.create({
     data: {
-      phone,
+      phone: phoneStr,
       account_type: accountType,
       token,
       token_expires: tokenExpires,

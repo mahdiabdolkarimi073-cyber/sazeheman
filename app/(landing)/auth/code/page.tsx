@@ -40,7 +40,7 @@ function AuthCodeValidator(
     useDelayedEffect(() => {
         if ((tiny && !verifyRoute) || code.length !== 6) return;
         setChecking(true);
-        authUser(+phone, "sazeheman")
+        authUser(String(phone), "sazeheman")
             .then(async () => {
                 router.push("/dashboard");
                 alert(`خوش آمدید`);

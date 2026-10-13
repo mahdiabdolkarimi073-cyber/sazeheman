@@ -13,7 +13,7 @@ function Page() {
 
     useEffect(() => {
         if (phone) {
-            authUser(+phone, 'shoghlman').catch(console.error);
+            authUser(String(phone), 'shoghlman').catch(console.error);
         }
     }, [phone]);
 
