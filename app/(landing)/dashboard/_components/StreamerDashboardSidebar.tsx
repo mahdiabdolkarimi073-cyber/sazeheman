@@ -7,20 +7,18 @@ import Image from "next/image";
 import { ActionIcon, Loader, NavLink, Popover, PopoverDropdown, PopoverTarget } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import StyledDiv from "@/components/helper/StyledDiv";
 import { DashIcon } from "@/app/(landing)/dashboard/_components/DashIcons";
 import useUser, { refetchUser } from '@/lib/hooks/useUser';
 import { logout } from '../../auth/action';
 import { askConfirm } from '@/components/ui/modals/confirm';
-import { customStyle } from '@/components/ui/utils';
-import { useLinkLoader } from "@/components/helper/LinkLoader";
 import useTheme from "@/lib/hooks/useTheme";
 import { useRouter } from 'next/navigation';
-
+import { IconlyArrowLeft2 } from '@/components/assets/iconpack';
+import { IconCharity, IconStore } from '@/components/ui/SVGs';
 
 export const sazehemanItems = [
     {
-        label: "",
+        label: "منوی اصلی",
         items: [
             {
                 label: "داشبورد",
@@ -58,7 +56,7 @@ export const sazehemanItems = [
 
 export const shoghlmanItems = [
     {
-        label: "",
+        label: "منوی اصلی",
         items: [
             {
                 label: "داشبورد",
@@ -95,137 +93,96 @@ function StreamerDashboardSidebar(props: any) {
     const activeLink = useMemo(() => pathname.split("/").slice(2).join("/") || "", [pathname]);
     const user = useUser();
     const [theme, setTheme] = useTheme();
-    const linkLoading = useLinkLoader();
     const accountType = user?.account_type || 'sazeheman';
     const DashSidebarItems = accountType === 'shoghlman' ? shoghlmanItems : sazehemanItems;
+    const isMobile = !!props?.mobile;
 
     return (
-        <div className={`max-h-(--m) sticky bottom-5 top-5 ${props?.mobile ? "grow" : "hidden lg:block"}`}
-            style={customStyle({
-                "--m": "calc(100vh - 40px)"
-            })}>
-            <div
-                className={`relative overflow-hidden rounded-2xl min-w-75 h-full flex-col flex justify-stretch content-stretch items-stretch bg-white/30`}>
-                {!props.mobile && (
-                    <div
-                        className="absolute inset-0 rounded-2xl pointer-events-none"
-                        style={{
-                            background: `linear-gradient(0deg, var(--primary) 0%,${theme === 'dark' ? "var(--sidebar)" : "#e4e4e4"} 70%)`,
-                            WebkitMask:
-                                "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                            WebkitMaskComposite: "xor",
-                            maskComposite: "exclude",
-                            padding: "1px"
-                        }}
-                    />
+        <div className={isMobile ? "grow flex flex-col h-full" : "hidden lg:block sticky top-5 self-start"}
+            style={!isMobile ? { height: "calc(100vh - 40px)" } : undefined}>
+            <div className={`flex flex-col h-full ${isMobile ? "" : "w-[280px]"} bg-white rounded-2xl border border-[#E7F5EE] shadow-[0_2px_12px_rgba(23,61,53,0.06)] overflow-hidden`}>
+                {/* Logo / Header */}
+                {!isMobile && (
+                    <div className="px-5 pt-5 pb-3 border-b border-[#E7F5EE]">
+                        <Logo />
+                    </div>
                 )}
 
-                <div
-                    style={{ width: props.mobile ? "" : "300px" }}
-                    className="p-5 rounded-2xl h-full flex flex-col gap-3 justify-between items-between relative"
-                >
-                    {!props.mobile && (
-                        <div className="flex items-center gap-2">
-                            <Logo  />
-                            {/* <p className="bg-primary px-3 text-light rounded-full py-0.5">بتا</p> */}
+                {/* Account type badge */}
+                <div className="px-5 py-3">
+                    <div className="flex items-center gap-2.5 rounded-xl bg-[#E7F5EE] px-3 py-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#36B98A]/15 flex items-center justify-center shrink-0">
+                            {accountType === 'shoghlman' ? <IconStore width={18} height={18} /> : <IconCharity width={18} height={18} />}
                         </div>
-                    )}
-                    {accountType === 'sazeheman' ? 'سازه من' : 'شغل من'}
-                    <div className={'grow flex flex-col gap-3'}>
-                        {DashSidebarItems.map((o, i) => (
-                            <div key={i}>
-                                <p className={`text-black/70 text-sm mb-1`}>{o.label}</p>
-                                <div className={'flex flex-col gap-1'}>
-                                    {o.items.map((o, i) => {
-                                        const active = !o.link ? o.link === activeLink : activeLink.startsWith(o.link);
-                                        const link = '/dashboard/' + o.link;
-                                        return (
-                                            <Link href={link} key={i} className={'relative'}>
-                                                {active && (
-                                                    <div>
-                                                        <div
-                                                            className="absolute inset-0 rounded-xl p-0.5 pointer-events-none"
-                                                            style={{
-                                                                background: "linear-gradient(270deg, var(--primary) 0%,transparent 50%)",
-                                                                WebkitMask:
-                                                                    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                                                                WebkitMaskComposite: "xor",
-                                                                maskComposite: "exclude",
-                                                                zIndex: -1
-                                                            }}
-                                                        />
-                                                        <div
-                                                            className="absolute inset-0 rounded-xl p-0.5 pointer-events-none opacity-40"
-                                                            style={{
-                                                                background: "linear-gradient(270deg, var(--primary) 0%,transparent 100%)",
-                                                                zIndex: -1
-                                                            }}
-                                                        />
-                                                    </div>
-                                                )}
-                                                <div className={'cursor-pointer flex items-start gap-2 py-3 px-2 sidebar-item'}>
-                                                    {linkLoading === link ? (
-                                                        <Loader size={20} />
-                                                    ) : (
-                                                        <StyledDiv base={"." + (o.link || "main")} style={{
-                                                            color: active ? "var(--primary)" : theme === "dark" ? "unset" : "#52525C"
-                                                        }}>
-                                                            {o.icon}
-                                                        </StyledDiv>
-                                                    )}
-                                                    <p className={'text-sm'}>{o.label}</p>
-                                                </div>
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        ))}
+                        <span className="text-sm font-semibold text-[#173D35]">
+                            {accountType === 'shoghlman' ? 'حساب شغل من' : 'حساب سازه من'}
+                        </span>
                     </div>
-                    <div
-                        className="mt-5 rounded-xl px-3 py-1 flex justify-between items-center bg-white backdrop-blur-sm">
-                        <div className="flex items-center">
+                </div>
+
+                {/* Navigation items */}
+                <div className="grow flex flex-col gap-1 px-3 overflow-y-auto">
+                    {DashSidebarItems.map((section, i) => (
+                        <div key={i} className="flex flex-col gap-1">
+                            <p className="text-xs font-medium text-[#6B7771] px-3 pt-2 pb-1">{section.label}</p>
+                            {section.items.map((item, j) => {
+                                const active = !item.link ? item.link === activeLink : activeLink.startsWith(item.link);
+                                const link = '/dashboard/' + item.link;
+                                return (
+                                    <Link
+                                        href={link}
+                                        key={j}
+                                        className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors min-h-11 ${
+                                            active
+                                                ? 'bg-[#36B98A]/10 text-[#173D35] font-semibold'
+                                                : 'text-[#252C2A] hover:bg-[#F7F8F6]'
+                                        }`}
+                                    >
+                                        <span className={`shrink-0 ${active ? 'text-[#36B98A]' : 'text-[#6B7771]'}`}>
+                                            {item.icon}
+                                        </span>
+                                        <span className="text-sm">{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    ))}
+                </div>
+
+                {/* User profile section */}
+                <div className="px-3 pb-3 pt-2 border-t border-[#E7F5EE]">
+                    <div className="flex items-center justify-between rounded-xl bg-[#F7F8F6] px-3 py-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
                             <Image
                                 src={"/pics/design/default-avatar.png"}
                                 alt={user?.phone ?? "user"}
                                 width={100}
                                 height={100}
-                                className="rounded-full"
-                                style={{
-                                    width: "36px",
-                                    height: "36px",
-                                }}
+                                className="rounded-full shrink-0"
+                                style={{ width: "36px", height: "36px" }}
                             />
-                            <div className="p-2 font-semibold min-h-13 flex flex-col justify-center">
-                                <p className="text-sm">{user?.phone || "کاربر #" + user?.id}</p>
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold truncate text-[#252C2A]">
+                                    {user?.phone || "کاربر #" + user?.id}
+                                </p>
                                 {user?.plan === "partner" && (
-                                    <div className="rounded-full items-center text-[#007A55] flex justify-start gap-1">
-                                        <IconHallowStar
-                                            style={{
-                                                width: "20px",
-                                                height: "20px",
-                                            }}
-                                        />
-                                        <p className="text-xs">پارتنر</p>
+                                    <div className="flex items-center gap-1 text-[#36B98A]">
+                                        <IconHallowStar style={{ width: "14px", height: "14px" }} />
+                                        <span className="text-xs">پارتنر</span>
                                     </div>
                                 )}
                             </div>
                         </div>
-
                         <Popover position="top" closeOnClickOutside closeOnEscape>
                             <PopoverTarget>
-                                <div className={' rounded-xl p-0.5'}>
-                                    <ActionIcon
-                                        color={'rgb(from var(--text-color) r g b / 0.7)'}
-                                        radius={'md'}
-                                        variant={'transparent'}
-                                        classNames={{
-                                            root: "sidebar-userdots"
-                                        }}
-                                    >
-                                        <IconDots color='currentColor' />
-                                    </ActionIcon>
-                                </div>
+                                <ActionIcon
+                                    color={'rgb(from var(--text-color) r g b / 0.7)'}
+                                    radius={'md'}
+                                    variant={'transparent'}
+                                    size="sm"
+                                >
+                                    <IconDots color='currentColor' />
+                                </ActionIcon>
                             </PopoverTarget>
                             <PopoverDropdown className="p-1!">
                                 <div className="w-40">
@@ -238,10 +195,8 @@ function StreamerDashboardSidebar(props: any) {
                                     </Link>
                                     <NavLink
                                         className="justify-start! w-full"
-                                        label={theme === "light" ? "دارک مود" : "لایت مود"}
-                                        onClick={() => {
-                                            setTheme(theme === "light" ? "dark" : "light")
-                                        }}
+                                        label={theme === "light" ? "حالت تاریک" : "حالت روشن"}
+                                        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
                                         leftSection={<IconMoon width={"20px"} height={"20px"} color={'currentColor'} />}
                                     />
                                     <NavLink
@@ -262,19 +217,6 @@ function StreamerDashboardSidebar(props: any) {
                     </div>
                 </div>
             </div>
-            {!props.mobile && (
-                <div
-                    className={`absolute -right-10 bottom-0 w-full opacity-50 h-full z-10`}
-                    style={{
-                        zIndex: -1,
-                        filter: "blur(150px)",
-                        background:
-                            theme === "dark" ?
-                                "linear-gradient(0deg, var(--primary) 35%,transparent 100%)" :
-                                'linear-gradient(0deg, var(--primary) 35%, var(--secondary, #7CCF00) 40%,#ffffff 100%'
-                    }}
-                />
-            )}
         </div>
     );
 }
