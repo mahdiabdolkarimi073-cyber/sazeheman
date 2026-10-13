@@ -1,43 +1,39 @@
 import {NextRequest, NextResponse} from "next/server";
-import {cookies} from "next/headers";
+import {prisma} from "@/lib/prisma";
+import {requireUser, AuthError, authErrorResponse} from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
-    const c = await cookies();
-    const token = c.get('token')?.value;
-    const user = token ? global._USERS?.[token] : undefined;
-
-    if (!user) {
-        return NextResponse.json({
-            message: "احراز هویت نشده است",
-            status: false,
-        }, {status: 401});
+    let user;
+    try {
+        user = await requireUser();
+    } catch (e) {
+        if (e instanceof AuthError) return authErrorResponse(e);
+        throw e;
     }
 
-    const makeStat = (current: number, last: number) => ({
-        current,
-        last,
-        changes: last === 0 ? 0 : Math.round(((current - last) / last) * 100),
-        values: Array.from({length: 7}, () => Math.floor(Math.random() * current)),
-    });
-
-    if (user.account_type === 'shoghlman') {
-        return NextResponse.json({
-            statistics: {
-                profile_views: makeStat(856, 620),
-                product_sales: makeStat(43, 28),
-                active_ads: makeStat(3, 1),
-                open_auctions: makeStat(5, 2),
+    const [projects, businesses, auctions, products, activeSub] = await Promise.all([
+        prisma.constructionProject.count({ where: { user_id: user.id } }),
+        prisma.business.count({ where: { user_id: user.id } }),
+        prisma.auction.count({ where: { user_id: user.id, status: "open" } }),
+        prisma.shop.count({ where: { user_id: user.id } }),
+        prisma.subscription.findFirst({
+            where: {
+                user_id: user.id,
+                status: { in: ["trial", "active"] },
+                expires_at: { gt: new Date() },
             },
-            status: true,
-        });
-    }
+        }),
+    ]);
 
     return NextResponse.json({
         statistics: {
-            project_views: makeStat(1240, 980),
-            contact_requests: makeStat(85, 60),
-            active_projects: makeStat(12, 8),
-            contractor_signups: makeStat(34, 22),
+            projects,
+            businesses,
+            open_auctions: auctions,
+            shops: products,
+            has_active_subscription: !!activeSub,
+            subscription_status: activeSub?.status || "none",
+            subscription_expires: activeSub?.expires_at?.toISOString() || null,
         },
         status: true,
     });

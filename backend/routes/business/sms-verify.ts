@@ -17,6 +17,50 @@ export default async function (req: NextRequest) {
         }, { status: 400 });
     }
 
+    const now = new Date();
+    const latestCode = await prisma.smsCode.findFirst({
+        where: {
+            phone,
+            used: false,
+            expires_at: { gt: now },
+        },
+        orderBy: { created_at: "desc" },
+    });
+
+    if (!latestCode) {
+        return NextResponse.json({
+            message: "کد معتبر نیست یا منقضی شده است",
+            status: false,
+        }, { status: 400 });
+    }
+
+    if (latestCode.attempts >= 5) {
+        await prisma.smsCode.update({
+            where: { id: latestCode.id },
+            data: { used: true },
+        });
+        return NextResponse.json({
+            message: "تعداد تلاش‌ها بیش از حد مجاز است",
+            status: false,
+        }, { status: 429 });
+    }
+
+    if (latestCode.code !== code) {
+        await prisma.smsCode.update({
+            where: { id: latestCode.id },
+            data: { attempts: { increment: 1 } },
+        });
+        return NextResponse.json({
+            message: "کد اشتباه است",
+            status: false,
+        }, { status: 400 });
+    }
+
+    await prisma.smsCode.update({
+        where: { id: latestCode.id },
+        data: { used: true },
+    });
+
     await prisma.business.updateMany({
         where: { phone },
         data: { phone_verified: true },

@@ -7,8 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           String   @id @default(uuid())
+  phone        String   @unique
+  role         String   @default("user") // user | admin
+  account_type String   @default("sazeheman") // sazeheman | shoghlman
+  nickname     String?
+  slug         String?
+  first_name   String?
+  last_name    String?
+  email        String?
+  plan         String   @default("free")
+  status       String   @default("active") // active | suspended
+  token        String?  @unique
+  token_expires DateTime?
+  trial_used   Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  subscriptions   Subscription[]
+  payments        Payment[]
+  projects        ConstructionProject[]
+  businesses      Business[]
+  shops           Shop[]
+  auctions        Auction[]
+  bids            AuctionBid[]
+  tickets         SupportTicket[]
+  ticketReplies   TicketReply[]
+  comments        UserComment[]
+  notifications   UserNotification[]
+  fileUploads     FileUpload[]
+
+  @@map("users")
+}
+
 model ConstructionProject {
   id             String   @id @default(uuid())
+  user_id        String?
   project_name   String
   builder_name   String
   area           Float?
@@ -22,15 +57,17 @@ model ConstructionProject {
   other_contacts String?
   description    String?
   address        String?
+  city           String?
   location_lat   Float?
   location_lng   Float?
   photo_url      String?
   phone_verified Boolean  @default(false)
-  status         String   @default("pending")
+  status         String   @default("pending") // pending | approved | rejected
   created_at     DateTime @default(now())
 
-  needs          ProjectNeed[]
-  notifications  Notification[]
+  user          User?            @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  needs         ProjectNeed[]
+  notifications Notification[]
 
   @@map("construction_projects")
 }
@@ -68,6 +105,7 @@ model SmsCode {
   code       String
   expires_at DateTime
   used       Boolean  @default(false)
+  attempts   Int      @default(0)
   created_at DateTime @default(now())
 
   @@map("sms_codes")
@@ -87,8 +125,22 @@ model Notification {
   @@map("notifications")
 }
 
+model UserNotification {
+  id          String   @id @default(uuid())
+  user_id     String
+  title       String
+  description String?
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_notifications")
+}
+
 model Business {
   id            String   @id @default(uuid())
+  user_id       String?
   business_name String
   full_name     String
   job_id        String?
@@ -98,6 +150,7 @@ model Business {
   other_contacts String?
   description   String?
   address       String?
+  city          String?
   location_lat  Float?
   location_lng  Float?
   plan          String   @default("free")
@@ -105,8 +158,9 @@ model Business {
   status        String   @default("pending")
   created_at    DateTime @default(now())
 
-  job    ConstructionJob? @relation(fields: [job_id], references: [id], onDelete: SetNull)
-  photos BusinessPhoto[]
+  user    User?            @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  job     ConstructionJob? @relation(fields: [job_id], references: [id], onDelete: SetNull)
+  photos  BusinessPhoto[]
 
   @@map("businesses")
 }
@@ -131,7 +185,7 @@ model Advertisement {
   media_type    String   @default("image")
   link_url      String?
   phone         String?
-  status        String   @default("pending")
+  status        String   @default("pending") // pending | active | rejected
   amount_paid   Int      @default(0)
   starts_at     DateTime @default(now())
   expires_at    DateTime?
@@ -142,30 +196,35 @@ model Advertisement {
 
 model UserComment {
   id         String   @id @default(uuid())
+  user_id    String?
   name       String
   phone      String?
   text       String
   rating     Int      @default(5)
-  status     String   @default("pending")
+  status     String   @default("pending") // pending | approved | rejected
   created_at DateTime @default(now())
+
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@map("user_comments")
 }
 
 model SupportTicket {
   id         String   @id @default(uuid())
+  user_id    String?
   name       String
   phone      String
   email      String?
   subject    String
   category   String   @default("general")
   priority   String   @default("normal")
-  status     String   @default("open")
+  status     String   @default("open") // open | answered | closed
   message    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  replies    TicketReply[]
+  user     User?         @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  replies  TicketReply[]
 
   @@map("support_tickets")
 }
@@ -173,17 +232,20 @@ model SupportTicket {
 model TicketReply {
   id         String   @id @default(uuid())
   ticket_id  String
+  user_id    String?
   message    String
   is_admin   Boolean  @default(false)
   created_at DateTime @default(now())
 
   ticket SupportTicket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  user   User?         @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@map("ticket_replies")
 }
 
 model Auction {
   id            String    @id @default(uuid())
+  user_id       String?
   title         String
   category      String
   description   String?
@@ -191,12 +253,13 @@ model Auction {
   city          String?
   budget        Int?
   deadline      DateTime?
-  status        String    @default("open")
+  status        String    @default("open") // open | closed | awarded
   dashboard_type String   @default("sazeheman")
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
-  bids          AuctionBid[]
+  user  User?        @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  bids  AuctionBid[]
 
   @@map("auctions")
 }
@@ -204,6 +267,7 @@ model Auction {
 model AuctionBid {
   id          String   @id @default(uuid())
   auction_id  String
+  user_id     String?
   bidder_name String
   phone       String
   price       Int
@@ -211,12 +275,14 @@ model AuctionBid {
   created_at  DateTime @default(now())
 
   auction Auction @relation(fields: [auction_id], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@map("auction_bids")
 }
 
 model Shop {
   id            String   @id @default(uuid())
+  user_id       String?
   name          String
   owner_phone   String
   description   String?
@@ -228,8 +294,9 @@ model Shop {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  products      Product[]
-  shopAds       ShopAd[]
+  user      User?      @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  products  Product[]
+  shopAds   ShopAd[]
 
   @@map("shops")
 }
@@ -272,7 +339,7 @@ model ShopAd {
   image_url  String
   link_url   String?
   amount_paid Int     @default(0)
-  status     String   @default("active")
+  status     String   @default("pending") // pending | active | rejected
   starts_at  DateTime @default(now())
   expires_at DateTime?
   created_at DateTime @default(now())
@@ -280,4 +347,62 @@ model ShopAd {
   shop Shop @relation(fields: [shop_id], references: [id], onDelete: Cascade)
 
   @@map("shop_ads")
+}
+
+model Subscription {
+  id          String   @id @default(uuid())
+  user_id     String
+  plan        String   @default("free")
+  status      String   @default("inactive") // inactive | trial | active | expired
+  starts_at   DateTime @default(now())
+  expires_at  DateTime?
+  trial_used  Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  user_id     String
+  amount      Int      @default(0)
+  plan        String?
+  status      String   @default("pending") // pending | paid | failed | test
+  gateway     String   @default("test")
+  tracking_id String?
+  description String?
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model ContactMessage {
+  id         String   @id @default(uuid())
+  name       String
+  last_name  String?
+  email      String?
+  phone      String?
+  message    String
+  created_at DateTime @default(now())
+
+  @@map("contact_messages")
+}
+
+model FileUpload {
+  id          String   @id @default(uuid())
+  user_id     String?
+  filename    String
+  mime_type   String
+  size        Int
+  data        Bytes
+  created_at  DateTime @default(now())
+
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@map("file_uploads")
 }

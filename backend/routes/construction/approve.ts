@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {requireAdmin, AuthError, authErrorResponse} from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
     if (req.method !== "POST") {
         return NextResponse.json({ message: "Method not allowed", status: false }, { status: 405 });
+    }
+
+    try {
+        await requireAdmin();
+    } catch (e) {
+        if (e instanceof AuthError) return authErrorResponse(e);
+        throw e;
     }
 
     const body = await req.json().catch(() => ({})) as Record<string, any>;
@@ -13,6 +21,13 @@ export default async function (req: NextRequest) {
     if (!projectId || !action) {
         return NextResponse.json({
             message: "project_id و action الزامی است",
+            status: false,
+        }, { status: 400 });
+    }
+
+    if (action !== "approve" && action !== "reject") {
+        return NextResponse.json({
+            message: "action باید approve یا reject باشد",
             status: false,
         }, { status: 400 });
     }

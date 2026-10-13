@@ -1,13 +1,18 @@
 'use server';
 import {cookies} from "next/headers";
+import {prisma} from "@/lib/prisma";
+import {generateToken, createOrUpdateUser} from "@/lib/api/auth";
+import {DebugMode} from "@/lib/VARS";
 
 export async function setUserToken(token: string) {
     const cookie = await cookies();
     const ex = new Date();
-    ex.setDate(ex.getDate() + 3);
+    ex.setDate(ex.getDate() + 30);
     cookie.set("token", token, {
         path: "/",
-        expires: ex
+        expires: ex,
+        httpOnly: true,
+        sameSite: "lax",
     });
 
     return {
@@ -17,32 +22,32 @@ export async function setUserToken(token: string) {
 
 export async function logout() {
     const c = await cookies();
+    const token = c.get('token')?.value;
+    if (token) {
+        await prisma.user.updateMany({
+            where: { token },
+            data: { token: null, token_expires: null },
+        }).catch(() => {});
+    }
     c.delete("token");
     return true;
 }
 
-global._USERS ||= {};
-
-export async function authUser(phone: number, accountType: string = 'sazeheman') {
-    const existing = Object.values(global._USERS).find((user) => user.phone === phone+"");
-    const user = existing || {
-        phone: phone+"",
-        token: `${Math.random().toString(36)}-${Math.random().toString(36)}`,
-        id: Math.random().toString(36).slice(2),
-        nickname: "",
-        slug: "",
-        first_name: "",
-        last_name: "",
-        email: "",
-        plan: "free",
-        account_type: accountType,
-        created_at: new Date().toISOString(),
-    };
-    if (existing && !existing.account_type) {
-        existing.account_type = accountType;
-    }
-
-    global._USERS[user.token] = user;
+export async function authUser(phone: string, accountType: string = 'sazeheman') {
+    const user = await createOrUpdateUser(phone, accountType);
     await setUserToken(user.token);
-    return user;
+
+    return {
+        id: user.id,
+        phone: user.phone,
+        role: user.role,
+        account_type: user.account_type,
+        nickname: user.nickname,
+        slug: user.slug,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        plan: user.plan,
+        created_at: user.created_at.toISOString(),
+    };
 }

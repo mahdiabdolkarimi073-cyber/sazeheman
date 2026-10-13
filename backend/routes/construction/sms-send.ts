@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isDevMode } from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
     if (req.method !== "POST") {
@@ -36,12 +37,37 @@ export default async function (req: NextRequest) {
         data: { phone, code, expires_at: expiresAt },
     });
 
-    console.log(`[SMS] OTP for ${phone}: ${code}`);
+    const dev = isDevMode();
+    if (dev) {
+        console.log(`[SMS-DEV] OTP for ${phone}: ${code}`);
+    } else {
+        const smsUrl = process.env.SMS_API_URL;
+        const smsApiKey = process.env.SMS_API_KEY;
+        if (smsUrl && smsApiKey) {
+            try {
+                await fetch(smsUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${smsApiKey}`,
+                    },
+                    body: JSON.stringify({
+                        phone,
+                        message: `کد تایید شما: ${code}`,
+                    }),
+                });
+            } catch (e) {
+                console.error("[SMS] Failed to send:", e);
+            }
+        } else {
+            console.warn("[SMS] No SMS gateway configured. OTP will not be sent in production.");
+        }
+    }
 
     return NextResponse.json({
         message: "کد تایید ارسال شد",
         status: true,
         ttl: 120,
-        dev_code: process.env.NODE_ENV === "development" ? code : undefined,
+        ...(dev ? { dev_code: code } : {}),
     });
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {requireUser, getRequestUser, AuthError, authErrorResponse} from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
     if (req.method !== "POST") {
@@ -18,8 +19,28 @@ export default async function (req: NextRequest) {
         }
     }
 
+    const existing = await prisma.constructionProject.findFirst({
+        where: {
+            phone1: body.phone1,
+            status: { in: ["pending", "approved"] },
+        },
+    });
+
+    if (existing) {
+        return NextResponse.json({
+            message: "پروژه‌ای با این شماره قبلا ثبت شده است",
+            status: false,
+            existing_id: existing.id,
+            existing_status: existing.status,
+        }, { status: 409 });
+    }
+
+    const currentUser = await getRequestUser();
+    const userId = currentUser?.id || null;
+
     const project = await prisma.constructionProject.create({
         data: {
+            user_id: userId,
             project_name: body.project_name,
             builder_name: body.builder_name,
             area: body.area ? parseFloat(body.area) : null,
@@ -33,6 +54,7 @@ export default async function (req: NextRequest) {
             other_contacts: body.other_contacts || null,
             description: body.description || null,
             address: body.address || null,
+            city: body.city || null,
             location_lat: body.location_lat ? parseFloat(body.location_lat) : null,
             location_lng: body.location_lng ? parseFloat(body.location_lng) : null,
             photo_url: body.photo_url || null,

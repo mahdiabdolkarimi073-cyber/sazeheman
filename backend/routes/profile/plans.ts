@@ -1,24 +1,20 @@
 import {NextRequest, NextResponse} from "next/server";
-import {cookies} from "next/headers";
+import {requireUser, AuthError, authErrorResponse} from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
-    const c = await cookies();
-    const token = c.get('token')?.value;
-    const user = token ? global._USERS?.[token] : undefined;
-
-    if (!user) {
-        return NextResponse.json({
-            message: "احراز هویت نشده است",
-            status: false,
-        }, {status: 401});
+    try {
+        await requireUser();
+    } catch (e) {
+        if (e instanceof AuthError) return authErrorResponse(e);
+        throw e;
     }
 
     return NextResponse.json({
         plans: {
-            free: { price: 0, discount: 0 },
-            basic: { price: 99000, discount: 0 },
-            advanced: { price: 199000, discount: 10 },
-            partner: { price: 499000, discount: 15 },
+            free: { price: 0, discount: 0, name: "پایه", trial_days: 2 },
+            basic: { price: 99000, discount: 0, name: "حرفه‌ای", trial_days: 0 },
+            advanced: { price: 199000, discount: 10, name: "ویژه", trial_days: 0 },
+            partner: { price: 499000, discount: 15, name: "شراکت", trial_days: 0 },
         },
         status: true,
     });

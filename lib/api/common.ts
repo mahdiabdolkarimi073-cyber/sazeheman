@@ -1,11 +1,7 @@
 'use server';
 
-
-import {cookies} from "next/headers";
-
+import {getRequestUser} from "@/lib/api/auth";
 
 export async function getUser() {
-    const c = await cookies();
-    const token = c.get('token')?.value;
-    return token ? global._USERS?.[token] || undefined:undefined;
+    return await getRequestUser();
 }

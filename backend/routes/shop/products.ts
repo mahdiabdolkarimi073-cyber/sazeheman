@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
+import {requireUser, AuthError, authErrorResponse} from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
-    const c = await cookies();
-    const token = c.get('token')?.value;
-    const user = token ? global._USERS?.[token] : undefined;
-
-    if (!user) {
-        return NextResponse.json({ message: "احراز هویت نشده است", status: false }, { status: 401 });
+    let user;
+    try {
+        user = await requireUser();
+    } catch (e) {
+        if (e instanceof AuthError) return authErrorResponse(e);
+        throw e;
     }
 
-    const shop = await prisma.shop.findFirst({ where: { owner_phone: user.phone } });
+    const shop = await prisma.shop.findFirst({ where: { user_id: user.id } });
     if (!shop) {
         return NextResponse.json({ message: "فروشگاه شما یافت نشد", status: false }, { status: 404 });
     }
@@ -52,16 +52,17 @@ export default async function (req: NextRequest) {
         if (!id) {
             return NextResponse.json({ message: "شناسه محصول الزامی است", status: false }, { status: 400 });
         }
+        const data: Record<string, any> = {};
+        if (body.name !== undefined) data.name = body.name;
+        if (body.description !== undefined) data.description = body.description;
+        if (body.price !== undefined) data.price = parseInt(body.price);
+        if (body.image_url !== undefined) data.image_url = body.image_url;
+        if (body.stock !== undefined) data.stock = parseInt(body.stock);
+        if (body.category_id !== undefined) data.category_id = body.category_id;
+
         const product = await prisma.product.updateMany({
             where: { id, shop_id: shop.id },
-            data: {
-                name: body.name,
-                description: body.description,
-                price: body.price ? parseInt(body.price) : undefined,
-                image_url: body.image_url,
-                stock: body.stock ? parseInt(body.stock) : undefined,
-                category_id: body.category_id,
-            },
+            data,
         });
         return NextResponse.json({ status: true, product });
     }
