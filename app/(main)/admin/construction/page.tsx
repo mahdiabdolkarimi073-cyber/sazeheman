@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect} from 'react';
 import {Badge, Loader, Center, Modal, Textarea, Alert} from '@mantine/core';
-import {IconInfoCircle, IconCheckCircle, IconXCircle, IconClock} from '@tabler/icons-react';
+import {IconInfoCircle, IconCheckCircle, IconXCircle, IconClock} from '@/components/assets/tabler-icons';
 import CustomButton from '@/components/ui/base/CustomButton';
 import {api} from '@/lib/api/base';
 import {echoTimeDiff} from '@/lib/utils/global';

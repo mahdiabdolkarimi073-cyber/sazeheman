@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect} from 'react';
 import {Badge, Loader, Center, Alert, TextInput, Textarea, NumberInput, Select} from '@mantine/core';
-import {IconInfoCircle, IconCheckCircle, IconXCircle, IconClock, IconArrowRight} from '@tabler/icons-react';
+import {IconInfoCircle, IconCheckCircle, IconXCircle, IconClock, IconArrowRight} from '@/components/assets/tabler-icons';
 import Link from 'next/link';
 import {useParams} from 'next/navigation';
 import {api} from '@/lib/api/base';

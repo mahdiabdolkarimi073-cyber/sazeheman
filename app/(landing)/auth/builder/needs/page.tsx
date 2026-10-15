@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect} from 'react';
 import {Textarea, Checkbox, Alert, Loader, Center} from '@mantine/core';
-import {IconInfoCircle} from '@tabler/icons-react';
+import {IconInfoCircle} from '@/components/assets/tabler-icons';
 import CustomButton from '@/components/ui/base/CustomButton';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {api} from '@/lib/api/base';

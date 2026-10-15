@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect} from 'react';
 import {Badge, Loader, Center, Alert, Image} from '@mantine/core';
-import {IconInfoCircle, IconCircleCheck, IconCircleX, IconClock, IconPlus} from '@tabler/icons-react';
+import {IconInfoCircle, IconCheckCircle, IconXCircle, IconClock, IconPlus} from '@/components/assets/tabler-icons';
 import Link from 'next/link';
 import {api} from '@/lib/api/base';
 import {echoTimeDiff} from '@/lib/utils/global';
@@ -41,8 +41,8 @@ type Project = {
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     pending: { label: 'در انتظار تأیید', color: 'orange', icon: <IconClock size={18} /> },
-    approved: { label: 'تأییدشده', color: 'green', icon: <IconCircleCheck size={18} /> },
-    rejected: { label: 'ردشده', color: 'red', icon: <IconCircleX size={18} /> },
+    approved: { label: 'تأییدشده', color: 'green', icon: <IconCheckCircle size={18} /> },
+    rejected: { label: 'ردشده', color: 'red', icon: <IconXCircle size={18} /> },
 };
 
 function Page() {
@@ -158,7 +158,7 @@ function Page() {
                                 </div>
 
                                 {p.phone_verified ? (
-                                    <Badge color="green" variant="light" size="sm" leftSection={<IconCircleCheck size={14} />}>
+                                    <Badge color="green" variant="light" size="sm" leftSection={<IconCheckCircle size={14} />}>
                                         شماره تأیید شده
                                     </Badge>
                                 ) : (
@@ -188,7 +188,7 @@ function Page() {
                                 )}
 
                                 {p.status === 'rejected' && p.rejection_reason && (
-                                    <Alert color="red" variant="light" icon={<IconCircleX size={18} />} className="mt-1">
+                                    <Alert color="red" variant="light" icon={<IconXCircle size={18} />} className="mt-1">
                                         <span className="font-medium">دلیل رد:</span> {p.rejection_reason}
                                     </Alert>
                                 )}
@@ -200,7 +200,7 @@ function Page() {
                                 )}
 
                                 {p.status === 'approved' && (
-                                    <Alert color="green" variant="light" icon={<IconCircleCheck size={18} />} className="mt-1">
+                                    <Alert color="green" variant="light" icon={<IconCheckCircle size={18} />} className="mt-1">
                                         پروژه شما تأیید شده و روی نقشه عمومی نمایش داده می‌شود.
                                     </Alert>
                                 )}

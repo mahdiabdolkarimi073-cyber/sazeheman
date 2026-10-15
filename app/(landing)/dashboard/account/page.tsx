@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect} from 'react';
 import {TextInput, Loader, Center, Alert} from '@mantine/core';
-import {IconInfoCircle, IconCheckCircle} from '@tabler/icons-react';
+import {IconInfoCircle, IconCheckCircle} from '@/components/assets/tabler-icons';
 import {api} from '@/lib/api/base';
 import {refetchUser} from '@/lib/hooks/useUser';
 import CustomButton from '@/components/ui/base/CustomButton';
