@@ -33,19 +33,40 @@ export default async function (req: NextRequest) {
         }, { status: 400 });
     }
 
+    const rejectionReason = (body.rejection_reason || "").toString().trim();
+
+    if (action !== "approve" && action !== "reject") {
+        return NextResponse.json({
+            message: "action باید approve یا reject باشد",
+            status: false,
+        }, { status: 400 });
+    }
+
+    if (action === "reject" && !rejectionReason) {
+        return NextResponse.json({
+            message: "ذکر دلیل رد الزامی است",
+            status: false,
+        }, { status: 400 });
+    }
+
     const newStatus = action === "approve" ? "approved" : "rejected";
 
     const business = await prisma.business.update({
         where: { id: businessId },
-        data: { status: newStatus },
+        data: {
+            status: newStatus,
+            rejection_reason: action === "reject" ? rejectionReason : null,
+        },
     });
 
-    if (action === "approve" && business.user_id) {
+    if (business.user_id) {
         await prisma.userNotification.create({
             data: {
                 user_id: business.user_id,
-                title: "کسب‌وکار شما تأیید شد",
-                description: `کسب‌وکار «${business.business_name}» تأیید و در فهرست عمومی قرار گرفت.`,
+                title: action === "approve" ? "کسب‌وکار شما تأیید شد" : "کسب‌وکار شما رد شد",
+                description: action === "approve"
+                    ? `کسب‌وکار «${business.business_name}» تأیید و در فهرست عمومی قرار گرفت.`
+                    : `کسب‌وکار «${business.business_name}» رد شد. دلیل: ${rejectionReason}`,
             },
         }).catch(() => {});
     }

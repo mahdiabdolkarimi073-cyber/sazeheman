@@ -6,8 +6,8 @@ export default async function (req: NextRequest) {
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const city = url.searchParams.get("city");
+    const search = url.searchParams.get("search");
     const withNeeds = url.searchParams.get("with_needs") === "true";
-    const dashboardType = url.searchParams.get("dashboard_type") || "sazeheman";
 
     const currentUser = await getRequestUser();
     const isAdmin = currentUser?.role === "admin";
@@ -30,15 +30,24 @@ export default async function (req: NextRequest) {
         where.city = city;
     }
 
+    if (search && isAdmin) {
+        where.OR = [
+            { project_name: { contains: search } },
+            { builder_name: { contains: search } },
+            { city: { contains: search } },
+        ];
+    }
+
     const projects = await prisma.constructionProject.findMany({
         where,
         orderBy: { created_at: "desc" },
-        take: 50,
+        take: isAdmin ? 100 : 50,
         select: {
             id: true,
             project_name: true,
             builder_name: true,
             area: true,
+            start_date: true,
             floors_count: true,
             manager_role: true,
             phone1: isAdmin ? true : false,

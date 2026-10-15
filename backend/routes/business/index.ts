@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {getRequestUser, AuthError, authErrorResponse} from "@/lib/api/auth";
 
 export default async function (req: NextRequest) {
     const url = new URL(req.url);
     const city = url.searchParams.get("city");
     const jobId = url.searchParams.get("job_id");
     const search = url.searchParams.get("search");
+    const status = url.searchParams.get("status");
 
-    const where: any = { status: "approved" };
+    const currentUser = await getRequestUser();
+    const isAdmin = currentUser?.role === "admin";
+
+    const where: any = {};
+    if (isAdmin && status) {
+        where.status = status;
+    } else {
+        where.status = "approved";
+    }
     if (city) where.city = city;
     if (jobId) where.job_id = jobId;
     if (search) {
@@ -20,7 +30,7 @@ export default async function (req: NextRequest) {
     const businesses = await prisma.business.findMany({
         where,
         orderBy: { created_at: "desc" },
-        take: 50,
+        take: 100,
         select: {
             id: true,
             business_name: true,
@@ -34,9 +44,15 @@ export default async function (req: NextRequest) {
             location_lng: true,
             plan: true,
             phone_verified: true,
-            photos: { select: { photo_url: true } },
-            job: { select: { name: true, slug: true } },
+            status: true,
+            rejection_reason: isAdmin ? true : false,
+            user_id: isAdmin ? true : false,
             created_at: true,
+            phone: isAdmin ? true : false,
+            email: isAdmin ? true : false,
+            other_contacts: isAdmin ? true : false,
+            photos: { select: { id: true, photo_url: true } },
+            job: { select: { id: true, name: true, slug: true } },
         },
     });
 

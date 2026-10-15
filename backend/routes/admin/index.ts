@@ -16,8 +16,25 @@ export default async function (req: NextRequest) {
         const section = url.searchParams.get("section");
 
         if (section === "users") {
+            const search = url.searchParams.get("search") || "";
+            const where: any = {};
+            if (search) {
+                where.OR = [
+                    { phone: { contains: search } },
+                    { nickname: { contains: search } },
+                    { first_name: { contains: search } },
+                    { last_name: { contains: search } },
+                    { email: { contains: search } },
+                ];
+            }
             const users = await prisma.user.findMany({
-                select: { id: true, phone: true, role: true, account_type: true, nickname: true, plan: true, status: true, trial_used: true, created_at: true },
+                where,
+                select: {
+                    id: true, phone: true, role: true, account_type: true,
+                    nickname: true, first_name: true, last_name: true, email: true,
+                    plan: true, status: true, trial_used: true, created_at: true,
+                    _count: { select: { projects: true, businesses: true } },
+                },
                 orderBy: { created_at: "desc" },
                 take: 100,
             });

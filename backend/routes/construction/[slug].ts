@@ -4,7 +4,8 @@ import {requireUser, requireAdmin, AuthError, authErrorResponse} from "@/lib/api
 
 export default async function (req: NextRequest) {
     const url = new URL(req.url);
-    const projectId = url.searchParams.get("id");
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const projectId = pathParts[pathParts.length - 1] || url.searchParams.get("id");
 
     if (!projectId) {
         return NextResponse.json({ message: "id الزامی است", status: false }, { status: 400 });
