@@ -6,6 +6,7 @@ export default async function (req: NextRequest) {
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const city = url.searchParams.get("city");
+    const withNeeds = url.searchParams.get("with_needs") === "true";
     const dashboardType = url.searchParams.get("dashboard_type") || "sazeheman";
 
     const currentUser = await getRequestUser();
@@ -42,6 +43,7 @@ export default async function (req: NextRequest) {
             manager_role: true,
             phone1: isAdmin ? true : false,
             phone2: isAdmin ? true : false,
+            phone3: isAdmin ? true : false,
             email: isAdmin ? true : false,
             other_contacts: isAdmin ? true : false,
             description: true,
@@ -52,7 +54,17 @@ export default async function (req: NextRequest) {
             photo_url: true,
             phone_verified: true,
             status: true,
+            rejection_reason: isAdmin ? true : false,
+            user_id: isAdmin ? true : false,
             created_at: true,
+            needs: withNeeds && isAdmin ? {
+                select: {
+                    id: true,
+                    job_id: true,
+                    description: true,
+                    job: { select: { id: true, name: true, slug: true, icon: true } },
+                },
+            } : false,
         },
     });
 

@@ -61,9 +61,10 @@ model ConstructionProject {
   location_lat   Float?
   location_lng   Float?
   photo_url      String?
-  phone_verified Boolean  @default(false)
-  status         String   @default("pending") // pending | approved | rejected
-  created_at     DateTime @default(now())
+  phone_verified   Boolean  @default(false)
+  status           String   @default("pending") // pending | approved | rejected
+  rejection_reason String?
+  created_at       DateTime @default(now())
 
   user          User?            @relation(fields: [user_id], references: [id], onDelete: SetNull)
   needs         ProjectNeed[]

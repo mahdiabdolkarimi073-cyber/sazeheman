@@ -26,6 +26,11 @@ export const sazehemanItems = [
                 icon: <DashIcon name="dashboard" />
             },
             {
+                label: "سازه‌های من",
+                link: "my-projects",
+                icon: <DashIcon name="tools" />
+            },
+            {
                 label: "پنل کارکنان",
                 link: "workers",
                 icon: <DashIcon name="donations" />
@@ -49,7 +54,27 @@ export const sazehemanItems = [
                 label: "مدیریت محصولات",
                 link: "products",
                 icon: <DashIcon name="products" />
-            }
+            },
+        ]
+    },
+    {
+        label: "حساب کاربری",
+        items: [
+            {
+                label: "اطلاعات حساب من",
+                link: "account",
+                icon: <DashIcon name="dashboard" />
+            },
+            {
+                label: "شغل‌های من",
+                link: "my-businesses",
+                icon: <DashIcon name="giftcards" />
+            },
+            {
+                label: "اشتراک",
+                link: "subscription",
+                icon: <DashIcon name="subscription" />
+            },
         ]
     },
 ] as const;
@@ -62,6 +87,11 @@ export const shoghlmanItems = [
                 label: "داشبورد",
                 link: "",
                 icon: <DashIcon name="dashboard" />
+            },
+            {
+                label: "شغل‌های من",
+                link: "my-businesses",
+                icon: <DashIcon name="giftcards" />
             },
             {
                 label: "تبلیغات",
@@ -78,11 +108,26 @@ export const shoghlmanItems = [
                 link: "products",
                 icon: <DashIcon name="products" />
             },
+        ]
+    },
+    {
+        label: "حساب کاربری",
+        items: [
+            {
+                label: "اطلاعات حساب من",
+                link: "account",
+                icon: <DashIcon name="dashboard" />
+            },
+            {
+                label: "سازه‌های من",
+                link: "my-projects",
+                icon: <DashIcon name="tools" />
+            },
             {
                 label: "اشتراک",
                 link: "subscription",
                 icon: <DashIcon name="subscription" />
-            }
+            },
         ]
     },
 ] as const;

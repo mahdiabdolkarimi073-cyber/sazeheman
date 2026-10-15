@@ -39,6 +39,18 @@ type BusinessStatistics = Partial<Record<keyof typeof BusinessChartData, Busines
 
 const BusinessActions = [
     {
+        href: "/dashboard/my-businesses",
+        title: "شغل‌های من",
+        description: "مشاهده و مدیریت کسب‌وکارهای ثبت‌شده توسط شما",
+        cta: "مدیریت کسب‌وکارها",
+    },
+    {
+        href: "/dashboard/account",
+        title: "اطلاعات حساب من",
+        description: "مدیریت پروفایل و اطلاعات حساب کاربری خود",
+        cta: "مشاهده",
+    },
+    {
         href: "/dashboard/ads",
         title: "تبلیغات",
         description: "تبلیغ کسب‌وکار خود را در صفحه اصلی قرار دهید",

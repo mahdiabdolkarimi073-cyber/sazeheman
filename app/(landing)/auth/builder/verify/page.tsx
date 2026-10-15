@@ -60,8 +60,8 @@ function Page() {
         api('/construction/sms-verify', {phone, code, project_id: projectId}, 'POST')
             .then(() => {
                 try { sessionStorage.removeItem('builder_needs_selection'); } catch {}
-                router.push(`/`);
-                window.alert('ثبت نام پروژه شما با موفقیت تکمیل شد! پس از تایید ادمین، پروژه شما روی نقشه نمایش داده خواهد شد.');
+                try { sessionStorage.removeItem('builder_project_form'); } catch {}
+                router.push(`/dashboard/my-projects`);
             })
             .catch(() => {
                 setChecking(false);

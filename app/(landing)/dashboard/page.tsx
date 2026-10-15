@@ -39,15 +39,21 @@ const QuickActions = [
         cta: "شروع ثبت پروژه",
     },
     {
-        href: "/dashboard/workers",
-        title: "پنل کارکنان",
-        description: "مدیریت کارکنان و نیروهای مرتبط با پروژه‌های شما",
+        href: "/dashboard/my-projects",
+        title: "سازه‌های من",
+        description: "مشاهده و مدیریت پروژه‌های ثبت‌شده توسط شما",
         cta: "مشاهده",
     },
     {
-        href: "/dashboard/creators",
-        title: "پنل کارفرما",
-        description: "مدیریت درخواست‌ها و ارتباط با پیمانکاران",
+        href: "/dashboard/my-businesses",
+        title: "شغل‌های من",
+        description: "مشاهده و مدیریت کسب‌وکارهای ثبت‌شده توسط شما",
+        cta: "مشاهده",
+    },
+    {
+        href: "/dashboard/account",
+        title: "اطلاعات حساب من",
+        description: "مدیریت پروفایل و اطلاعات حساب کاربری خود",
         cta: "مشاهده",
     },
     {
