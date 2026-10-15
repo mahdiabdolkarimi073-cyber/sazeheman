@@ -65,7 +65,7 @@ function Page() {
         try {
             const payload = {
                 ...form,
-                phone,
+                phone: form.phone || phone,
                 job_id: form.job_id || null,
                 location_lat: location[0],
                 location_lng: location[1],
@@ -140,11 +140,11 @@ function Page() {
                         component={TextInput}
                         label="شماره تماس"
                         placeholder="09xxxxxxxxx"
-                        name="phone_display"
-                        defaultValue={phone}
+                        name="phone"
+                        defaultValue={phone || ''}
                         dir="ltr"
                         className="grow"
-                        disabled
+                        required
                     />
                 </div>
 

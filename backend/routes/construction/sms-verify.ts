@@ -18,9 +18,14 @@ export default async function (req: NextRequest) {
         }, { status: 400 });
     }
 
+    const projectFilter: Record<string, any> = { phone1: phone };
+    if (body.project_id) {
+        projectFilter.id = body.project_id;
+    }
+
     if (isDevMode()) {
         await prisma.constructionProject.updateMany({
-            where: { phone1: phone },
+            where: projectFilter,
             data: { phone_verified: true },
         }).catch(() => {});
         return NextResponse.json({
@@ -74,7 +79,7 @@ export default async function (req: NextRequest) {
     });
 
     await prisma.constructionProject.updateMany({
-        where: { phone1: phone },
+        where: projectFilter,
         data: { phone_verified: true },
     });
 

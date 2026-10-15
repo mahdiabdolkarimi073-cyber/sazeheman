@@ -1,123 +1,146 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import {Textarea, Checkbox, Loader, Center} from '@mantine/core';
+import {Textarea, Checkbox, Alert} from '@mantine/core';
+import {IconInfoCircle} from '@tabler/icons-react';
 import CustomButton from '@/components/ui/base/CustomButton';
-import {api} from '@/lib/api/base';
 import {useRouter, useSearchParams} from 'next/navigation';
 
-type Job = {
-    id: string;
-    name: string;
-    slug: string;
-    icon?: string;
-};
+const TEMP_JOBS = [
+    'اسکلت و سازه',
+    'معماری و طراحی',
+    'برق ساختمان',
+    'لوله‌کشی و تأسیسات',
+    'گچ‌کاری',
+    'کاشی و سرامیک',
+    'نقاشی ساختمان',
+    'در و پنجره',
+    'آسانسور',
+    'محوطه‌سازی',
+];
+
+const STORAGE_KEY = 'builder_needs_selection';
+
+type Selection = Record<number, { checked: boolean; description: string }>;
+
+function loadSelection(): Selection {
+    if (typeof window === 'undefined') {
+        return Object.fromEntries(TEMP_JOBS.map((_, i) => [i, {checked: false, description: ''}]));
+    }
+    try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw) as Selection;
+            return Object.fromEntries(TEMP_JOBS.map((_, i) => [
+                i,
+                parsed[i] || {checked: false, description: ''},
+            ]));
+        }
+    } catch {}
+    return Object.fromEntries(TEMP_JOBS.map((_, i) => [i, {checked: false, description: ''}]));
+}
 
 function Page() {
     const router = useRouter();
     const params = useSearchParams();
     const projectId = params.get('project_id') || '';
+    const phone = params.get('phone') || '';
 
-    const [jobs, setJobs] = useState<Job[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selected, setSelected] = useState<Record<string, { checked: boolean; description: string }>>({});
+    const [selected, setSelected] = useState<Selection>(loadSelection);
     const [submitting, setSubmitting] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     useEffect(() => {
-        api('/construction/jobs', {}, 'GET')
-            .then((res) => {
-                setJobs(res.data?.jobs || []);
-                const initial: Record<string, { checked: boolean; description: string }> = {};
-                for (const job of res.data?.jobs || []) {
-                    initial[job.id] = {checked: false, description: ''};
-                }
-                setSelected(initial);
-            })
-            .finally(() => setLoading(false));
-    }, []);
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
+        } catch {}
+    }, [selected]);
 
-    const toggleJob = (jobId: string) => {
+    const toggleJob = (index: number) => {
+        setShowError(false);
         setSelected((prev) => ({
             ...prev,
-            [jobId]: {...prev[jobId], checked: !prev[jobId].checked},
+            [index]: {...prev[index], checked: !prev[index].checked},
         }));
     };
 
-    const setDescription = (jobId: string, description: string) => {
+    const setDescription = (index: number, description: string) => {
         setSelected((prev) => ({
             ...prev,
-            [jobId]: {...prev[jobId], description},
+            [index]: {...prev[index], description},
         }));
     };
 
-    const handleSubmit = () => {
-        const needs = Object.entries(selected)
-            .filter(([, v]) => v.checked)
-            .map(([jobId, v]) => ({
-                job_id: jobId,
-                description: v.description || undefined,
-            }));
+    const selectedCount = Object.values(selected).filter((v) => v.checked).length;
 
-        if (needs.length === 0) {
-            window.alert('حداقل یک شغل انتخاب کنید');
+    const handleContinue = () => {
+        if (selectedCount === 0) {
+            setShowError(true);
             return;
         }
 
         setSubmitting(true);
-        api('/construction/needs', {project_id: projectId, needs}, 'POST')
-            .then(() => {
-                window.alert('ثبت نام با موفقیت تکمیل شد! پس از تایید ادمین پروژه شما روی نقشه نمایش داده می‌شود.');
-                router.push('/');
-            })
-            .finally(() => setSubmitting(false));
+        router.push(`/auth/builder/verify?project_id=${projectId}&phone=${phone}`);
     };
 
-    if (loading) {
-        return (
-            <Center className="min-h-40">
-                <Loader />
-            </Center>
-        );
-    }
-
-    const selectedCount = Object.values(selected).filter((v) => v.checked).length;
+    const handleBack = () => {
+        router.push(`/auth/builder?project_id=${projectId}&phone=${phone}`);
+    };
 
     return (
         <div className="flex flex-col gap-2 max-w-2xl w-full">
-            <h3 className="text-3xl font-semibold">انتخاب نیازهای پروژه</h3>
+            <h3 className="text-3xl font-semibold">انتخاب مشاغل مورد نیاز پروژه</h3>
             <p className="opacity-60">
-                مشاغل مورد نیاز پروژه خود را انتخاب کنید. برای هر شغل می‌توانید توضیحات بیشتری بنویسید.
+                مشاغلی که برای پروژه خود نیاز دارید را انتخاب کنید. می‌توانید چند شغل را هم‌زمان انتخاب کنید و برای هر کدام توضیحات بنویسید.
             </p>
-            <p className="text-sm text-primary">
-                {selectedCount.toLocaleString('fa')} شغل انتخاب شده
-            </p>
+
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-primary">
+                    {selectedCount.toLocaleString('fa')} شغل انتخاب شده
+                </p>
+                <span className="text-xs opacity-50">مرحله ۲ از ۳</span>
+            </div>
             <br/>
 
+            {showError && (
+                <Alert
+                    color="red"
+                    variant="light"
+                    icon={<IconInfoCircle size={18} />}
+                    onClose={() => setShowError(false)}
+                    withCloseButton
+                >
+                    حداقل یک شغل باید انتخاب شود تا بتوانید ادامه دهید.
+                </Alert>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {jobs.map((job) => (
+                {TEMP_JOBS.map((jobName, index) => (
                     <div
-                        key={job.id}
-                        className={`rounded-xl border p-4 transition-all ${
-                            selected[job.id]?.checked
+                        key={index}
+                        className={`rounded-xl border p-4 transition-all cursor-pointer ${
+                            selected[index]?.checked
                                 ? 'border-primary bg-primary/5'
-                                : 'border-white/10'
+                                : 'border-white/10 hover:border-white/20'
                         }`}
+                        onClick={() => toggleJob(index)}
                     >
                         <Checkbox
-                            label={job.name}
-                            checked={selected[job.id]?.checked || false}
-                            onChange={() => toggleJob(job.id)}
-                            classNames={{label: 'font-medium'}}
+                            label={jobName}
+                            checked={selected[index]?.checked || false}
+                            onChange={() => toggleJob(index)}
+                            classNames={{label: 'font-medium cursor-pointer'}}
                         />
-                        {selected[job.id]?.checked && (
+                        {selected[index]?.checked && (
                             <Textarea
                                 placeholder="توضیحات بیشتر (اختیاری)"
-                                value={selected[job.id]?.description || ''}
-                                onChange={(e) => setDescription(job.id, e.currentTarget.value)}
+                                value={selected[index]?.description || ''}
+                                onChange={(e) => setDescription(index, e.currentTarget.value)}
                                 autosize
                                 minRows={1}
                                 className="mt-2"
                                 size="xs"
+                                onClick={(e) => e.stopPropagation()}
                             />
                         )}
                     </div>
@@ -125,9 +148,26 @@ function Page() {
             </div>
 
             <br/>
-            <CustomButton loading={submitting} onClick={handleSubmit} className="w-full">
-                تکمیل ثبت نام
-            </CustomButton>
+            <div className="flex flex-col sm:flex-row gap-3">
+                <CustomButton
+                    variant="outline"
+                    onClick={handleBack}
+                    className="w-full sm:w-auto"
+                >
+                    بازگشت و ویرایش پروژه
+                </CustomButton>
+                <CustomButton
+                    loading={submitting}
+                    onClick={handleContinue}
+                    className="w-full sm:flex-1"
+                >
+                    ادامه و تأیید شماره
+                </CustomButton>
+            </div>
+
+            <p className="text-xs opacity-40 mt-2">
+                این فهرست موقت و صرفاً برای تست است. مشاغل واقعی پس از راه‌اندازی پنل مدیریت اضافه خواهند شد.
+            </p>
         </div>
     );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {TextInput, Textarea, NumberInput, Select, FileInput} from '@mantine/core';
 import Image from 'next/image';
 import CustomButton from '@/components/ui/base/CustomButton';
@@ -8,7 +8,7 @@ import FormComponent from '@/components/ui/base/FormComponent';
 import {optimizeForm} from '@/lib/utils/global';
 import {api} from '@/lib/api/base';
 import LeafletMap from '@/components/map/leaflet';
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 
 const managerRoles = [
     {value: 'پیمانکار', label: 'پیمانکار'},
@@ -17,11 +17,31 @@ const managerRoles = [
     {value: 'صاحب ملک', label: 'صاحب ملک'},
 ];
 
+const FORM_STORAGE_KEY = 'builder_project_form';
+
 function Page() {
     const router = useRouter();
+    const params = useSearchParams();
+    const existingProjectId = params.get('project_id') || '';
+    const existingPhone = params.get('phone') || '';
+
     const [loading, setLoading] = useState(false);
     const [location, setLocation] = useState<[number, number] | undefined>();
     const [photoPreview, setPhotoPreview] = useState<string | undefined>();
+    const formRef = useRef<HTMLFormElement>(null);
+
+    useEffect(() => {
+        if (existingProjectId && existingPhone) {
+            try {
+                const raw = sessionStorage.getItem(FORM_STORAGE_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (saved.location) setLocation(saved.location);
+                    if (saved.photoPreview) setPhotoPreview(saved.photoPreview);
+                }
+            } catch {}
+        }
+    }, [existingProjectId, existingPhone]);
 
     const handlePhotoChange = (file: File | null) => {
         if (file) {
@@ -56,9 +76,15 @@ function Page() {
             const projectId = res.data?.project?.id;
             if (!projectId) throw new Error('پروژه ثبت نشد');
 
-            // Send SMS code
-            await api('/construction/sms-send', {phone: form.phone1}, 'POST');
-            router.push(`/auth/builder/verify?project_id=${projectId}&phone=${form.phone1}`);
+            try {
+                sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({
+                    location,
+                    photoPreview,
+                    form,
+                }));
+            } catch {}
+
+            router.push(`/auth/builder/needs?project_id=${projectId}&phone=${form.phone1}`);
         } catch {
             setLoading(false);
         }
@@ -66,11 +92,13 @@ function Page() {
 
     return (
         <div className="flex flex-col gap-2 max-w-2xl w-full">
-            <h3 className="text-3xl font-semibold">ثبت پروژه ساختمانی</h3>
+            <h3 className="text-3xl font-semibold">
+                {existingProjectId ? 'ویرایش اطلاعات پروژه' : 'ثبت پروژه ساختمانی'}
+            </h3>
             <p className="opacity-60">اطلاعات پروژه خود را وارد کنید. پس از ثبت، شماره شما تایید شده و پس از بررسی ادمین روی نقشه نمایش داده می‌شود.</p>
             <br/>
 
-            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            <form ref={formRef} className="flex flex-col gap-5" onSubmit={handleSubmit}>
                 <div className="flex flex-col lg:flex-row gap-4">
                     <FormComponent
                         component={TextInput}
@@ -228,7 +256,7 @@ function Page() {
                 </div>
 
                 <CustomButton loading={loading} type="submit" className="w-full">
-                    ثبت و ادامه
+                    {existingProjectId ? 'به‌روزرسانی و ادامه' : 'ثبت و ادامه'}
                 </CustomButton>
             </form>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {PinInput, Button} from '@mantine/core';
 import CustomButton from '@/components/ui/base/CustomButton';
 import {useRouter, useSearchParams} from 'next/navigation';
@@ -18,6 +18,26 @@ function Page() {
     const [sec, setSec] = useState(120);
     const [checking, setChecking] = useState(false);
     const [sending, setSending] = useState(false);
+    const [autoSent, setAutoSent] = useState(false);
+    const [missingInfo, setMissingInfo] = useState(false);
+    const sentRef = useRef(false);
+
+    useEffect(() => {
+        if (!projectId || !phone) {
+            setMissingInfo(true);
+            return;
+        }
+        if (sentRef.current) return;
+        sentRef.current = true;
+
+        setSending(true);
+        api('/construction/sms-send', {phone}, 'POST')
+            .then(() => {
+                setSec(120);
+                setAutoSent(true);
+            })
+            .finally(() => setSending(false));
+    }, [projectId, phone]);
 
     useEffect(() => {
         if (sec <= 0) return;
@@ -37,9 +57,11 @@ function Page() {
     useDelayedEffect(() => {
         if (code.length !== 6) return;
         setChecking(true);
-        api('/construction/sms-verify', {phone, code}, 'POST')
+        api('/construction/sms-verify', {phone, code, project_id: projectId}, 'POST')
             .then(() => {
-                router.push(`/auth/builder/needs?project_id=${projectId}`);
+                try { sessionStorage.removeItem('builder_needs_selection'); } catch {}
+                router.push(`/`);
+                window.alert('ثبت نام پروژه شما با موفقیت تکمیل شد! پس از تایید ادمین، پروژه شما روی نقشه نمایش داده خواهد شد.');
             })
             .catch(() => {
                 setChecking(false);
@@ -47,12 +69,29 @@ function Page() {
             });
     }, [code]);
 
+    if (missingInfo) {
+        return (
+            <div className="flex flex-col gap-4 justify-center max-w-sm">
+                <h3 className="text-2xl text-center font-semibold">اطلاعات ناقص است</h3>
+                <p className="opacity-60 text-center">
+                    برای ورود به این مرحله باید ابتدا اطلاعات پروژه را ثبت کنید.
+                </p>
+                <CustomButton onClick={() => router.push('/auth/builder')} className="w-full">
+                    بازگشت به ثبت پروژه
+                </CustomButton>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-4 justify-center max-w-sm">
             <h3 className="text-2xl text-center lg:text-start font-semibold">تایید شماره تلفن</h3>
             <p className="opacity-60 text-center lg:text-start">
                 کد ۶ رقمی ارسال شده به شماره <span dir="ltr">{phone}</span> را وارد کنید
             </p>
+            {sending && !autoSent && (
+                <p className="text-center opacity-50 text-sm">در حال ارسال کد...</p>
+            )}
             <div className="flex items-stretch">
                 <PinInput
                     disabled={checking}
