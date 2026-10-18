@@ -18,11 +18,49 @@ const CATEGORIES = [
     'سایر',
 ];
 
+type Auction = {
+    id: string;
+    title: string;
+    category: string;
+    description: string | null;
+    city: string | null;
+    budget: number | null;
+    deadline: string | null;
+    status: string;
+    created_at: string;
+    bidsCount: number;
+    currentBid: number | null;
+    phone?: string;
+};
+
+type Bid = {
+    id: string;
+    bidder_name: string;
+    price: number;
+    description: string | null;
+    created_at: string;
+    is_own?: boolean;
+};
+
+function statusLabel(s: string) {
+    if (s === 'open') return 'باز';
+    if (s === 'closed') return 'بسته شده';
+    if (s === 'awarded') return 'برنده انتخاب شده';
+    return s;
+}
+
+function statusColor(s: string) {
+    if (s === 'open') return 'bg-primary/10 text-primary';
+    if (s === 'awarded') return 'bg-blue-50 text-blue-600';
+    return 'bg-gray-200 text-gray-600';
+}
+
 function AuctionsPage() {
     const [view, setView] = useState<'list' | 'create' | 'detail'>('list');
-    const [auctions, setAuctions] = useState<any[]>([]);
+    const [auctions, setAuctions] = useState<Auction[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedAuction, setSelectedAuction] = useState<any>(null);
+    const [selectedBids, setSelectedBids] = useState<Bid[]>([]);
     const [dashboardType, setDashboardType] = useState<string>('sazeheman');
 
     // create form
@@ -34,18 +72,16 @@ function AuctionsPage() {
     const [budget, setBudget] = useState<number | ''>('');
     const [deadline, setDeadline] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [createMsg, setCreateMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    // bid form
-    const [bidName, setBidName] = useState('');
-    const [bidPhone, setBidPhone] = useState('');
-    const [bidPrice, setBidPrice] = useState<number | ''>('');
-    const [bidDesc, setBidDesc] = useState('');
-    const [submittingBid, setSubmittingBid] = useState(false);
+    // winner selection
+    const [awardConfirm, setAwardConfirm] = useState<Bid | null>(null);
+    const [awarding, setAwarding] = useState(false);
 
     const loadAuctions = (type?: string) => {
         setLoading(true);
         const dt = type || dashboardType;
-        api("/auctions", { dashboard_type: dt })
+        api("/auctions", { my: "true", dashboard_type: dt, status: "all", limit: 50 })
             .then(e => setAuctions(e.data?.auctions || []))
             .catch(() => {})
             .finally(() => setLoading(false));
@@ -70,14 +106,18 @@ function AuctionsPage() {
 
     const switchDashboardType = (type: string) => {
         setDashboardType(type);
+        localStorage.setItem('dashboard_type', type);
+        window.dispatchEvent(new Event('dashboard_type_changed'));
+        loadAuctions(type);
     };
 
     const submitAuction = async () => {
         if (!title || !category || !phone) {
-            window.alert?.("عنوان، دسته‌بندی و شماره تماس الزامی است");
+            setCreateMsg({ type: 'error', text: "عنوان، دسته‌بندی و شماره تماس الزامی است" });
             return;
         }
         setSubmitting(true);
+        setCreateMsg(null);
         try {
             await api("/auctions", {
                 title,
@@ -89,48 +129,55 @@ function AuctionsPage() {
                 deadline: deadline || undefined,
                 dashboard_type: dashboardType,
             });
+            setCreateMsg({ type: 'success', text: "مزایده با موفقیت ثبت شد" });
             setView('list');
             setTitle(''); setCategory(null); setDesc(''); setPhone(''); setCity(''); setBudget(''); setDeadline('');
             loadAuctions();
-        } catch {}
+        } catch (e: any) {
+            setCreateMsg({ type: 'error', text: e?.message || "خطا در ثبت مزایده" });
+        }
         setSubmitting(false);
     };
 
-    const openDetail = (auction: any) => {
-        setSelectedAuction(auction);
+    const openDetail = (auction: Auction) => {
         setView('detail');
-        api("/auctions/" + auction.id)
-            .then(e => setSelectedAuction(e.data?.auction))
+        setSelectedAuction(auction);
+        api(`/auctions/${auction.id}`)
+            .then(e => {
+                setSelectedAuction(e.data?.auction);
+                setSelectedBids(e.data?.bids || []);
+            })
             .catch(() => {});
     };
 
-    const submitBid = async () => {
-        if (!bidName || !bidPhone || !bidPrice) {
-            window.alert?.("نام، شماره تماس و قیمت الزامی است");
-            return;
-        }
-        setSubmittingBid(true);
-        try {
-            await api("/auctions/" + selectedAuction.id, {
-                bidder_name: bidName,
-                phone: bidPhone,
-                price: bidPrice,
-                description: bidDesc,
-            });
-            const updated = await api("/auctions/" + selectedAuction.id);
-            setSelectedAuction(updated.data?.auction);
-            setBidName(''); setBidPhone(''); setBidPrice(''); setBidDesc('');
-        } catch {}
-        setSubmittingBid(false);
+    const refreshDetail = () => {
+        if (!selectedAuction) return;
+        api(`/auctions/${selectedAuction.id}`)
+            .then(e => {
+                setSelectedAuction(e.data?.auction);
+                setSelectedBids(e.data?.bids || []);
+            })
+            .catch(() => {});
     };
 
     const closeAuction = async () => {
         try {
-            await api("/auctions/" + selectedAuction.id, { action: "close" }, "PUT");
-            const updated = await api("/auctions/" + selectedAuction.id);
-            setSelectedAuction(updated.data?.auction);
+            await api(`/auctions/${selectedAuction.id}`, { action: "close" }, "PUT");
+            refreshDetail();
             loadAuctions();
         } catch {}
+    };
+
+    const confirmAward = async () => {
+        if (!awardConfirm || !selectedAuction) return;
+        setAwarding(true);
+        try {
+            await api(`/auctions/${selectedAuction.id}`, { action: "award", bid_id: awardConfirm.id }, "PUT");
+            setAwardConfirm(null);
+            refreshDetail();
+            loadAuctions();
+        } catch {}
+        setAwarding(false);
     };
 
     // ── Dashboard type switcher ───────────────────────────────
@@ -157,12 +204,12 @@ function AuctionsPage() {
             <div className="flex flex-col gap-5 p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-semibold">مزایده‌ها</h1>
-                        <p className="text-sm opacity-70 mt-1">مزایده راه بیندازید و کمترین قیمت را انتخاب کنید</p>
+                        <h1 className="text-xl sm:text-2xl font-semibold">مزایده‌های من</h1>
+                        <p className="text-sm opacity-70 mt-1">مزایده‌های خود را مدیریت کنید</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                         <TypeSwitcher />
-                        <CustomButton shadow onClick={() => setView('create')}>
+                        <CustomButton shadow onClick={() => { setView('create'); setCreateMsg(null); }}>
                             + مزایده جدید
                         </CustomButton>
                     </div>
@@ -194,16 +241,23 @@ function AuctionsPage() {
                                 >
                                     <div className="flex items-start justify-between gap-2 mb-2">
                                         <h3 className="font-medium text-sm flex-1">{a.title}</h3>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${a.status === 'open' ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-600'}`}>
-                                            {a.status === 'open' ? 'باز' : 'بسته شده'}
+                                        <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${statusColor(a.status)}`}>
+                                            {statusLabel(a.status)}
                                         </span>
                                     </div>
                                     <p className="text-xs opacity-60 mb-2">{a.category}</p>
                                     {a.city && <p className="text-xs opacity-50">شهر: {a.city}</p>}
                                     {a.budget && <p className="text-xs opacity-50">بودجه: {Number(a.budget).toLocaleString('fa')} تومان</p>}
-                                    <p className="text-xs opacity-50 mt-2">
-                                        {(a.bids?.length || 0)} پیشنهاد قیمت
-                                    </p>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <p className="text-xs opacity-50">
+                                            {(a.bidsCount || 0).toLocaleString('fa')} پیشنهاد
+                                        </p>
+                                        {a.currentBid !== null && (
+                                            <p className="text-xs font-medium text-primary">
+                                                کمترین: {Number(a.currentBid).toLocaleString('fa')}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -215,8 +269,11 @@ function AuctionsPage() {
 
     // ── Detail View ───────────────────────────────────────────
     if (view === 'detail' && selectedAuction) {
-        const bids = selectedAuction.bids || [];
-        const lowestBid = bids.length > 0 ? bids.reduce((min: any, b: any) => b.price < min.price ? b : min) : null;
+        const bids = selectedBids;
+        const lowestBid = bids.length > 0 ? bids[0] : null;
+        const isOwner = selectedAuction.isOwner;
+        const isAwarded = selectedAuction.status === 'awarded';
+        const isOpen = selectedAuction.status === 'open';
 
         return (
             <div className="flex flex-col gap-5 p-4 sm:p-6">
@@ -233,8 +290,8 @@ function AuctionsPage() {
                             <h2 className="text-lg font-bold">{selectedAuction.title}</h2>
                             <p className="text-sm opacity-60 mt-1">{selectedAuction.category}</p>
                         </div>
-                        <span className={`text-xs px-3 py-1 rounded-full ${selectedAuction.status === 'open' ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-600'}`}>
-                            {selectedAuction.status === 'open' ? 'باز' : 'بسته شده'}
+                        <span className={`text-xs px-3 py-1 rounded-full ${statusColor(selectedAuction.status)}`}>
+                            {statusLabel(selectedAuction.status)}
                         </span>
                     </div>
 
@@ -252,10 +309,12 @@ function AuctionsPage() {
                         {selectedAuction.deadline && (
                             <div><span className="opacity-50">مهلت:</span> {new Date(selectedAuction.deadline).toLocaleDateString('fa')}</div>
                         )}
-                        <div><span className="opacity-50">تلفن:</span> {selectedAuction.phone}</div>
+                        {isOwner && selectedAuction.phone && (
+                            <div><span className="opacity-50">تلفن:</span> <span dir="ltr">{selectedAuction.phone}</span></div>
+                        )}
                     </div>
 
-                    {selectedAuction.status === 'open' && (
+                    {isOwner && isOpen && (
                         <div className="mb-6">
                             <CustomButton variant="soft" onClick={closeAuction} className="text-sm!">
                                 بستن مزایده
@@ -263,16 +322,19 @@ function AuctionsPage() {
                         </div>
                     )}
 
+                    {/* Bid list with winner selection */}
                     <div className="border-t border-b2 pt-5">
-                        <h3 className="font-medium mb-3">پیشنهادهای قیمت ({bids.length})</h3>
+                        <h3 className="font-medium mb-3">پیشنهادهای قیمت ({bids.length.toLocaleString('fa')})</h3>
                         {bids.length === 0 ? (
                             <p className="text-sm opacity-50 text-center py-6">هنوز پیشنهادی ثبت نشده است</p>
                         ) : (
                             <div className="flex flex-col gap-2">
-                                {bids.map((bid: any, i: number) => (
+                                {bids.map((bid: Bid, i: number) => (
                                     <div
                                         key={bid.id}
-                                        className={`flex items-center justify-between p-3 rounded-xl border ${lowestBid?.id === bid.id ? 'border-primary bg-primary/5' : 'border-b2 bg-background'}`}
+                                        className={`flex items-center justify-between p-3 rounded-xl border ${
+                                            i === 0 ? 'border-primary bg-primary/5' : 'border-b2 bg-background'
+                                        } ${isAwarded && bid.id === selectedAuction.winningBidId ? 'ring-2 ring-blue-400' : ''}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <span className="w-7 h-7 rounded-full bg-b1 flex items-center justify-center text-xs font-bold">
@@ -281,14 +343,31 @@ function AuctionsPage() {
                                             <div>
                                                 <p className="text-sm font-medium">{bid.bidder_name}</p>
                                                 {bid.description && <p className="text-xs opacity-50">{bid.description}</p>}
+                                                <p className="text-xs opacity-40 mt-0.5">
+                                                    {new Date(bid.created_at).toLocaleDateString('fa')}
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className="text-left">
-                                            <p className={`font-bold text-sm ${lowestBid?.id === bid.id ? 'text-primary' : ''}`}>
-                                                {Number(bid.price).toLocaleString('fa')} تومان
-                                            </p>
-                                            {lowestBid?.id === bid.id && (
-                                                <span className="text-xs text-primary">کمترین قیمت</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-left">
+                                                <p className={`font-bold text-sm ${i === 0 ? 'text-primary' : ''}`}>
+                                                    {Number(bid.price).toLocaleString('fa')} تومان
+                                                </p>
+                                                {i === 0 && !isAwarded && (
+                                                    <span className="text-xs text-primary">کمترین قیمت</span>
+                                                )}
+                                            </div>
+                                            {isOwner && !isAwarded && isOpen && (
+                                                <CustomButton
+                                                    variant="soft"
+                                                    className="text-xs! py-1.5! px-3!"
+                                                    onClick={() => setAwardConfirm(bid)}
+                                                >
+                                                    انتخاب برنده
+                                                </CustomButton>
+                                            )}
+                                            {isAwarded && bid.id === selectedAuction.winningBidId && (
+                                                <span className="text-xs text-blue-600 font-medium">برنده</span>
                                             )}
                                         </div>
                                     </div>
@@ -297,52 +376,38 @@ function AuctionsPage() {
                         )}
                     </div>
 
-                    {selectedAuction.status === 'open' && (
-                        <div className="border-t border-b2 pt-5 mt-5">
-                            <h3 className="font-medium mb-3">ثبت پیشنهاد قیمت</h3>
-                            <div className="flex flex-col gap-3 max-w-lg">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <TextInput
-                                        label="نام شما"
-                                        placeholder="نام و نام خانوادگی"
-                                        value={bidName}
-                                        onChange={(e) => setBidName(e.target.value)}
-                                    />
-                                    <TextInput
-                                        label="شماره تماس"
-                                        placeholder="09xxxxxxxxx"
-                                        value={bidPhone}
-                                        onChange={(e) => setBidPhone(e.target.value)}
-                                        dir="ltr"
-                                    />
-                                </div>
-                                <NumberInput
-                                    label="قیمت پیشنهادی (تومان)"
-                                    placeholder="مثلاً: 5000000"
-                                    value={bidPrice}
-                                    onChange={(val) => setBidPrice(val as number | '')}
-                                    thousandSeparator
-                                />
-                                <Textarea
-                                    label="توضیحات (اختیاری)"
-                                    placeholder="توضیحات پیشنهاد..."
-                                    value={bidDesc}
-                                    onChange={(e) => setBidDesc(e.target.value)}
-                                    autosize
-                                    minRows={2}
-                                />
-                                <CustomButton
-                                    shadow
-                                    loading={submittingBid}
-                                    onClick={submitBid}
-                                    className="w-full sm:w-auto"
-                                >
-                                    ثبت پیشنهاد
-                                </CustomButton>
-                            </div>
+                    {isAwarded && (
+                        <div className="mt-4 rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-700">
+                            این مزایده نهایی شده است. برنده: {selectedAuction.winningBidName || '—'}
                         </div>
                     )}
                 </div>
+
+                {/* Award confirmation modal */}
+                {awardConfirm && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setAwardConfirm(null)}>
+                        <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+                            <h3 className="font-bold text-base mb-2">تأیید انتخاب برنده</h3>
+                            <p className="text-sm opacity-70 mb-4">
+                                آیا از انتخاب پیشنهاد <strong>{awardConfirm.bidder_name}</strong> با قیمت <strong>{Number(awardConfirm.price).toLocaleString('fa')} تومان</strong> به عنوان برنده اطمینان دارید؟
+                            </p>
+                            <p className="text-xs opacity-50 mb-5">پس از انتخاب برنده، امکان ثبت پیشنهاد جدید و تغییر برنده وجود نخواهد داشت.</p>
+                            <div className="flex gap-3">
+                                <CustomButton
+                                    shadow
+                                    loading={awarding}
+                                    onClick={confirmAward}
+                                    className="flex-1"
+                                >
+                                    بله، انتخاب برنده
+                                </CustomButton>
+                                <CustomButton variant="soft" onClick={() => setAwardConfirm(null)} className="flex-1">
+                                    انصراف
+                                </CustomButton>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -358,6 +423,11 @@ function AuctionsPage() {
             </div>
 
             <div className="max-w-2xl bg-container rounded-2xl p-5 sm:p-7 border border-b2">
+                {createMsg && (
+                    <div className={`rounded-xl p-3 mb-4 text-sm ${createMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                        {createMsg.text}
+                    </div>
+                )}
                 <div className="flex flex-col gap-4">
                     <div className="mb-2">
                         <p className="text-sm font-medium mb-2">نوع داشبورد</p>

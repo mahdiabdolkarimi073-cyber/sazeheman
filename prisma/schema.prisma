@@ -256,6 +256,7 @@ model Auction {
   budget        Int?
   deadline      DateTime?
   status        String    @default("open") // open | closed | awarded
+  winning_bid_id String?  // id of the selected winning bid
   dashboard_type String   @default("sazeheman")
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt

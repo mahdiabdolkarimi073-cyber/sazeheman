@@ -15,11 +15,19 @@ const handle = async (req: NextRequest) => {
             .catch(() => undefined) as { default: any } | undefined;
 
         if (!file?.default) {
+            file = await import("../../../backend/routes/" + PATH + "/index.ts")
+                .catch(() => undefined) as { default: any } | undefined;
+        }
+
+        if (!file?.default) {
             const parts = PATH.split("/");
             if (parts.length > 1) {
-                const dynamicPath = [...parts.slice(0, -1), "[slug]"].join("/");
-                file = await import("../../../backend/routes/" + dynamicPath + ".ts")
-                    .catch(() => undefined) as { default: any } | undefined;
+                for (const param of ["[slug]", "[id]"]) {
+                    const dynamicPath = [...parts.slice(0, -1), param].join("/");
+                    file = await import("../../../backend/routes/" + dynamicPath + ".ts")
+                        .catch(() => undefined) as { default: any } | undefined;
+                    if (file?.default) break;
+                }
             }
         }
 

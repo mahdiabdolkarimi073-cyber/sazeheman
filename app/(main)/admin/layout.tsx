@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/cache/session";
 import { Metadata } from "next";
@@ -11,10 +12,19 @@ export const metadata: Metadata = {
 };
 
 async function AdminLayout({ children }: { children: React.ReactNode }) {
+    const h = await headers();
+    const pathname = h.get('x-pathname') || '';
+
+    const isAdminLogin = pathname === '/admin/login' || pathname.startsWith('/admin/login');
+
+    if (isAdminLogin) {
+        return <>{children}</>;
+    }
+
     const { user } = await getSession();
 
-    if (!user) redirect("/auth");
-    if (user.role !== "admin") redirect("/");
+    if (!user) redirect("/admin/login");
+    if (user.role !== "admin") redirect("/admin/login");
 
     return <AdminShell user={user}>{children}</AdminShell>;
 }

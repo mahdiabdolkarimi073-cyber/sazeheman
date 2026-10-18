@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { adminLogout } from '../login/action';
 import {
     IconDashboard, IconHardHat, IconBuilding, IconUsers,
     IconShoppingBag, IconGavel, IconMegaphone, IconTicket,
-    IconCreditCard, IconLogout, IconMenu, IconX,
+    IconCreditCard, IconLogout, IconMenu, IconX, IconArrowRight,
 } from '@/components/assets/tabler-icons';
 
 type NavItem = {
@@ -30,7 +31,9 @@ const navItems: NavItem[] = [
 
 function AdminShell({ user, children }: { user: any; children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     const isActive = (href: string) => {
         if (href === '/admin') return pathname === '/admin';
@@ -77,11 +80,23 @@ function AdminShell({ user, children }: { user: any; children: React.ReactNode }
             </nav>
 
             <div className="px-3 py-4 border-t border-white/10 shrink-0">
+                <button
+                    onClick={async () => {
+                        setLoggingOut(true);
+                        await adminLogout();
+                        router.push('/admin/login');
+                    }}
+                    disabled={loggingOut}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-all min-h-11 w-full"
+                >
+                    <IconLogout size={22} />
+                    <span>{loggingOut ? 'در حال خروج...' : 'خروج از حساب'}</span>
+                </button>
                 <Link
                     href="/"
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-300 hover:bg-white/5 transition-all min-h-11"
                 >
-                    <IconLogout size={22} />
+                    <IconArrowRight size={22} className="rotate-180" />
                     <span>بازگشت به سایت</span>
                 </Link>
             </div>
