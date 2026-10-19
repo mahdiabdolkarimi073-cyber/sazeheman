@@ -20,7 +20,16 @@ export default async function Home() {
         getAllPlans(),
         prisma.auction.findMany({
             where: { status: "open" },
-            include: { _count: { select: { bids: true } } },
+            select: {
+                id: true,
+                title: true,
+                category: true,
+                city: true,
+                budget: true,
+                deadline: true,
+                status: true,
+                _count: { select: { bids: true } },
+            },
             orderBy: { created_at: "desc" },
             take: 6,
         }).catch(() => []),

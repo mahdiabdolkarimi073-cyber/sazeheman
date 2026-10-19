@@ -76,9 +76,18 @@ export default async function (req: NextRequest) {
             prisma.auction.count({ where }),
             prisma.auction.findMany({
                 where,
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    category: true,
+                    description: true,
+                    city: true,
+                    budget: true,
+                    deadline: true,
+                    status: true,
+                    created_at: true,
                     _count: { select: { bids: true } },
-                    bids: { orderBy: { price: "asc" }, take: 1 },
+                    bids: { orderBy: { price: "asc" }, take: 1, select: { price: true } },
                 },
                 orderBy,
                 skip: (page - 1) * limit,

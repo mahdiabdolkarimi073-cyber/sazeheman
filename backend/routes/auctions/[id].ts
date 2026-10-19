@@ -17,10 +17,31 @@ export default async function (req: NextRequest) {
     const id = segments[segments.length - 1];
 
     if (req.method === "GET") {
+        // Explicit column selection: the live database may not have the
+        // winning_bid_id column yet (pending migration), so it must not be selected
         const auction = await prisma.auction.findUnique({
             where: { id },
-            include: {
-                bids: { orderBy: { price: "asc" } },
+            select: {
+                id: true,
+                user_id: true,
+                title: true,
+                category: true,
+                description: true,
+                phone: true,
+                city: true,
+                budget: true,
+                deadline: true,
+                status: true,
+                created_at: true,
+                updated_at: true,
+                bids: { orderBy: { price: "asc" }, select: {
+                    id: true,
+                    user_id: true,
+                    bidder_name: true,
+                    price: true,
+                    description: true,
+                    created_at: true,
+                } },
                 user: { select: { id: true, nickname: true } },
             },
         });
@@ -35,6 +56,9 @@ export default async function (req: NextRequest) {
 
         const minIncrement = computeMinIncrement(auction);
         const currentLowest = auction.bids[0]?.price ?? null;
+        const winningBidIdOf = (a: Record<string, unknown>) => (typeof a.winning_bid_id === "string" ? a.winning_bid_id : null);
+        const winningBidNameOf = (a: Record<string, unknown>, bids: { id: string; bidder_name: string }[]) =>
+            (typeof a.winning_bid_id === "string" ? (bids.find((b) => b.id === a.winning_bid_id)?.bidder_name || null) : null);
 
         const safeBids = auction.bids.map((b) => ({
             id: b.id,
@@ -63,8 +87,8 @@ export default async function (req: NextRequest) {
             isAdmin,
             ownerNickname: auction.user?.nickname || null,
             phone: isOwner || isAdmin ? auction.phone : undefined,
-            winningBidId: auction.winning_bid_id || null,
-            winningBidName: auction.winning_bid_id ? (auction.bids.find((b) => b.id === auction.winning_bid_id)?.bidder_name || null) : null,
+            winningBidId: winningBidIdOf(auction),
+            winningBidName: winningBidNameOf(auction, auction.bids),
         };
 
         return NextResponse.json({ auction: safeAuction, bids: safeBids, status: true });
@@ -96,7 +120,17 @@ export default async function (req: NextRequest) {
             return NextResponse.json({ message: "قیمت نامعتبر است", status: false }, { status: 400 });
         }
 
-        const auction = await prisma.auction.findUnique({ where: { id } });
+        // Explicit column selection: the live database may not have the
+        // winning_bid_id column yet (pending migration), so it must not be selected
+        const auction = await prisma.auction.findUnique({
+            where: { id },
+            select: {
+                user_id: true,
+                budget: true,
+                deadline: true,
+                status: true,
+            },
+        });
         if (!auction) {
             return NextResponse.json({ message: "مزایده یافت نشد", status: false }, { status: 404 });
         }
@@ -198,7 +232,17 @@ export default async function (req: NextRequest) {
 
         const body = await req.json().catch(() => ({})) as Record<string, any>;
 
-        const auction = await prisma.auction.findUnique({ where: { id } });
+        // Explicit column selection: the live database may not have the
+        // winning_bid_id column yet (pending migration), so it must not be selected
+        const auction = await prisma.auction.findUnique({
+            where: { id },
+            select: {
+                user_id: true,
+                title: true,
+                deadline: true,
+                status: true,
+            },
+        });
         if (!auction) {
             return NextResponse.json({ message: "مزایده یافت نشد", status: false }, { status: 404 });
         }
@@ -235,20 +279,29 @@ export default async function (req: NextRequest) {
                 return NextResponse.json({ message: "پیشنهاد یافت نشد", status: false }, { status: 404 });
             }
 
-            const result = await prisma.$transaction(async (tx) => {
+            // The live database may not have the winning_bid_id column yet
+            // (pending migration); retry without it if the first write fails
+            const runAward = async (withColumn: boolean) => prisma.$transaction(async (tx) => {
                 const locked = await tx.auction.findUnique({ where: { id } });
                 if (!locked || locked.status === "awarded") {
                     throw new Error("awarded");
                 }
-                const updated = await tx.auction.update({
+                return await tx.auction.update({
                     where: { id },
-                    data: { status: "awarded", winning_bid_id: bidId },
+                    data: withColumn ? { status: "awarded", winning_bid_id: bidId } : { status: "awarded" },
                 });
-                return { updated, bid };
-            }).catch((e) => {
-                if (e.message === "awarded") return null;
-                throw e;
             });
+
+            const result = await runAward(true)
+                .catch((e) => {
+                    if (e.message === "awarded") throw e;
+                    return runAward(false);
+                })
+                .catch((e) => {
+                    if (e.message === "awarded") return null;
+                    throw e;
+                })
+                .then((updated) => updated ? { updated, bid } : null);
 
             if (!result) {
                 return NextResponse.json({ message: "برنده قبلاً انتخاب شده است", status: false }, { status: 400 });

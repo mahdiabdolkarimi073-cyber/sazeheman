@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import NotFound from "@/app/not-found";
 import { prisma } from "@/lib/prisma";
 import AuctionDetailClient from "./AuctionDetailClient";
 
@@ -13,22 +14,27 @@ export default async function AuctionDetailPage({
 }: {
     params: { id: string };
 }) {
+    // Explicit column selection: the live database may not have the
+    // winning_bid_id column yet (pending migration), so it must not be selected
     const auction = await prisma.auction.findUnique({
         where: { id: params.id },
-        include: {
+        select: {
+            id: true,
+            title: true,
+            category: true,
+            description: true,
+            city: true,
+            budget: true,
+            deadline: true,
+            status: true,
+            created_at: true,
             _count: { select: { bids: true } },
-            bids: { orderBy: { price: "asc" } },
+            bids: { orderBy: { price: "asc" }, select: { price: true } },
         },
     });
 
     if (!auction) {
-        return (
-            <div className="w-full max-w-3xl mx-auto px-4 py-20 text-center">
-                <h1 className="text-xl font-bold text-[#252C2A] mb-3">مزایده یافت نشد</h1>
-                <p className="text-sm text-[#6B7771] mb-6">این مزایده وجود ندارد یا حذف شده است.</p>
-                <a href="/auctions" className="text-primary text-sm hover:underline">بازگشت به لیست مزایده‌ها</a>
-            </div>
-        );
+        return <NotFound />;
     }
 
     const initialData = {
