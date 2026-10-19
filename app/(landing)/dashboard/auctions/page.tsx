@@ -91,6 +91,7 @@ function AuctionsPage() {
         const saved = localStorage.getItem('dashboard_type');
         if (saved && saved !== dashboardType) {
             setDashboardType(saved);
+            loadAuctions(saved);
         } else {
             loadAuctions();
         }
@@ -128,7 +129,7 @@ function AuctionsPage() {
                 budget: budget || undefined,
                 deadline: deadline || undefined,
                 dashboard_type: dashboardType,
-            });
+            }, "POST");
             setCreateMsg({ type: 'success', text: "مزایده با موفقیت ثبت شد" });
             setView('list');
             setTitle(''); setCategory(null); setDesc(''); setPhone(''); setCity(''); setBudget(''); setDeadline('');
