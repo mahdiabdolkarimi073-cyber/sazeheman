@@ -12,12 +12,13 @@ export const dynamic = "force-dynamic";
 export default async function AuctionDetailPage({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
+    const { id } = await params;
     // Explicit column selection: the live database may not have the
     // winning_bid_id column yet (pending migration), so it must not be selected
     const auction = await prisma.auction.findUnique({
-        where: { id: params.id },
+        where: { id },
         select: {
             id: true,
             title: true,
@@ -51,5 +52,5 @@ export default async function AuctionDetailPage({
         currentBid: auction.bids[0]?.price ?? null,
     };
 
-    return <AuctionDetailClient auctionId={params.id} initialData={initialData} />;
+    return <AuctionDetailClient auctionId={id} initialData={initialData} />;
 }
