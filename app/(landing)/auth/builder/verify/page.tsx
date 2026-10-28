@@ -1,5 +1,4 @@
 'use client';
-
 import React, {useState, useEffect, useRef} from 'react';
 import {PinInput, Button} from '@mantine/core';
 import CustomButton from '@/components/ui/base/CustomButton';
@@ -8,6 +7,12 @@ import {api} from '@/lib/api/base';
 import {sleep} from '@/lib/utils/global';
 import {useDelayedEffect} from '@/lib/hooks/useEffect';
 
+function maskClientPhone(phone: string): string {
+    const str = String(phone || '').trim();
+    if (str.length < 7) return '***';
+    return `${str.slice(0, 4)}***${str.slice(-4)}`;
+}
+
 function Page() {
     const router = useRouter();
     const params = useSearchParams();
@@ -15,12 +20,13 @@ function Page() {
     const phone = params.get('phone') || '';
 
     const [code, setCode] = useState('');
-    const [sec, setSec] = useState(120);
+    const [sec, setSec] = useState(0);
     const [checking, setChecking] = useState(false);
     const [sending, setSending] = useState(false);
     const [autoSent, setAutoSent] = useState(false);
     const [missingInfo, setMissingInfo] = useState(false);
     const sentRef = useRef(false);
+    const resendLockRef = useRef(false);
 
     useEffect(() => {
         if (!projectId || !phone) {
@@ -30,11 +36,38 @@ function Page() {
         if (sentRef.current) return;
         sentRef.current = true;
 
+        const endpoint = '/api/construction/sms-send';
+        const startTime = performance.now();
         setSending(true);
+
+        console.info('[SMS-CLIENT][REQUEST] Auto-sending construction OTP on mount', {
+            endpoint,
+            method: 'POST',
+            maskedPhone: maskClientPhone(phone),
+        });
+
         api('/construction/sms-send', {phone}, 'POST')
-            .then(() => {
-                setSec(120);
+            .then((res: any) => {
+                console.info('[SMS-CLIENT][RESPONSE] Construction OTP auto-send succeeded', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: res?.data?.traceId || null,
+                });
+                setSec(res?.data?.ttl || 120);
                 setAutoSent(true);
+            })
+            .catch((err: any) => {
+                console.error('[SMS-CLIENT][ERROR] Construction OTP auto-send failed', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: err?.data?.traceId || null,
+                    errorCode: err?.data?.errorCode || null,
+                    message: err?.message || 'خطا در ارسال پیامک',
+                });
+                setSec(0);
+                setAutoSent(false);
             })
             .finally(() => setSending(false));
     }, [projectId, phone]);
@@ -45,28 +78,85 @@ function Page() {
     }, [sec]);
 
     const handleResend = () => {
+        if (!phone || sending || resendLockRef.current) return;
+        const endpoint = '/api/construction/sms-send';
+        const startTime = performance.now();
+
+        console.info('[SMS-CLIENT][CLICK] User clicked construction OTP resend', {
+            endpoint,
+            method: 'POST',
+            maskedPhone: maskClientPhone(phone),
+        });
+
+        resendLockRef.current = true;
         setSending(true);
         api('/construction/sms-send', {phone}, 'POST')
-            .then(() => {
-                setSec(120);
+            .then((res: any) => {
+                console.info('[SMS-CLIENT][RESPONSE] Construction OTP resend succeeded', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: res?.data?.traceId || null,
+                });
+                setSec(res?.data?.ttl || 120);
+                setAutoSent(true);
                 setCode('');
             })
-            .finally(() => setSending(false));
+            .catch((err: any) => {
+                console.error('[SMS-CLIENT][ERROR] Construction OTP resend failed', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: err?.data?.traceId || null,
+                    errorCode: err?.data?.errorCode || null,
+                    message: err?.message || 'خطا در ارسال پیامک',
+                });
+            })
+            .finally(() => {
+                setSending(false);
+                resendLockRef.current = false;
+            });
     };
 
-    useDelayedEffect(() => {
-        if (code.length !== 6) return;
+    const handleVerify = () => {
+        if (code.length !== 6 || checking) return;
+        const endpoint = '/api/construction/sms-verify';
+        const startTime = performance.now();
         setChecking(true);
+
+        console.info('[SMS-CLIENT][VERIFY_START] Submitting construction OTP', {
+            endpoint,
+            method: 'POST',
+            maskedPhone: maskClientPhone(phone),
+        });
+
         api('/construction/sms-verify', {phone, code, project_id: projectId}, 'POST')
-            .then(() => {
+            .then((res: any) => {
+                console.info('[SMS-CLIENT][VERIFY_SUCCESS] Construction OTP verified', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: res?.data?.traceId || null,
+                });
                 try { sessionStorage.removeItem('builder_needs_selection'); } catch {}
                 try { sessionStorage.removeItem('builder_project_form'); } catch {}
                 router.push(`/dashboard/my-projects`);
             })
-            .catch(() => {
+            .catch((err: any) => {
+                console.error('[SMS-CLIENT][VERIFY_ERROR] Construction OTP verification failed', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    message: err?.message || 'خطا در تایید کد',
+                });
                 setChecking(false);
                 setCode('');
             });
+    };
+
+    useDelayedEffect(() => {
+        if (code.length !== 6) return;
+        handleVerify();
     }, [code]);
 
     if (missingInfo) {
@@ -89,9 +179,11 @@ function Page() {
             <p className="opacity-60 text-center lg:text-start">
                 کد ۶ رقمی ارسال شده به شماره <span dir="ltr">{phone}</span> را وارد کنید
             </p>
+
             {sending && !autoSent && (
                 <p className="text-center opacity-50 text-sm">در حال ارسال کد...</p>
             )}
+
             <div className="flex items-stretch">
                 <PinInput
                     disabled={checking}
@@ -108,6 +200,7 @@ function Page() {
                     className="w-full justify-stretch!"
                 />
             </div>
+
             {sec > 0 ? (
                 <p className="text-center opacity-70 text-sm">
                     دریافت مجدد {sec.toLocaleString('fa')} ثانیه
@@ -121,10 +214,12 @@ function Page() {
                     ارسال مجدد
                 </CustomButton>
             )}
+
             <Button
                 radius="xl"
                 loading={checking}
                 disabled={code.length !== 6}
+                onClick={handleVerify}
             >
                 تایید
             </Button>

@@ -1,19 +1,40 @@
 'use server';
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { generateToken, isDevMode } from "@/lib/api/auth";
+import { generateToken } from "@/lib/api/auth";
+import {
+  normalizeIranPhone,
+  isValidIranPhone,
+  requestOtpCode,
+  verifyOtpCode,
+} from "@/lib/sms";
 
 export async function adminSendCode(phone: string) {
-  const phoneStr = String(phone).trim();
-
-  if (!phoneStr || phoneStr.length < 10) {
+  const normalizedPhone = normalizeIranPhone(phone);
+  if (!isValidIranPhone(normalizedPhone)) {
     return { ok: false, message: "شماره تلفن معتبر نیست" };
   }
 
-  const user = await prisma.user.findUnique({
-    where: { phone: phoneStr },
-    select: { id: true, role: true, status: true },
-  });
+  const legacyPhoneWithoutZero = normalizedPhone.startsWith("0")
+    ? normalizedPhone.slice(1)
+    : normalizedPhone;
+
+  let user = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { phone: normalizedPhone },
+      select: { id: true, phone: true, role: true, status: true },
+    });
+    if (!user && legacyPhoneWithoutZero !== normalizedPhone) {
+      user = await prisma.user.findUnique({
+        where: { phone: legacyPhoneWithoutZero },
+        select: { id: true, phone: true, role: true, status: true },
+      });
+    }
+  } catch (dbErr: any) {
+    console.error(`[ADMIN-OTP][DB ERROR] Failed to query user: ${dbErr?.message?.split("\n")[0]}`);
+    return { ok: false, message: "خطا در اتصال به پایگاه داده سرور" };
+  }
 
   if (!user) {
     return { ok: false, message: "حساب کاربری با این شماره یافت نشد" };
@@ -27,69 +48,51 @@ export async function adminSendCode(phone: string) {
     return { ok: false, message: "این شماره به حساب مدیریتی متعلق ندارد" };
   }
 
-  const oneMinuteAgo = new Date(Date.now() - 60_000);
-  const recent = await prisma.smsCode.findFirst({
-    where: { phone: phoneStr, created_at: { gte: oneMinuteAgo } },
-    orderBy: { created_at: "desc" },
-  });
-
-  if (recent) {
-    return { ok: false, message: "کد قبلی هنوز منقضی نشده است. یک دقیقه صبر کنید." };
-  }
-
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
-
-  await prisma.smsCode.create({
-    data: { phone: phoneStr, code, expires_at: expiresAt },
-  });
-
-  const dev = isDevMode();
-  if (dev) {
-    console.log(`[ADMIN-LOGIN-DEV] OTP for ${phoneStr}: ${code}`);
-  } else {
-    const smsUrl = process.env.SMS_API_URL;
-    const smsApiKey = process.env.SMS_API_KEY;
-    if (smsUrl && smsApiKey) {
-      try {
-        await fetch(smsUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${smsApiKey}`,
-          },
-          body: JSON.stringify({
-            phone: phoneStr,
-            message: `کد تایید ورود مدیر: ${code}`,
-          }),
-        });
-      } catch (e) {
-        console.error("[ADMIN-LOGIN SMS] Failed to send:", e);
-      }
-    } else {
-      console.warn("[ADMIN-LOGIN SMS] No SMS gateway configured.");
-    }
+  const otpRes = await requestOtpCode(normalizedPhone, "ServerAction:adminSendCode");
+  if (!otpRes.ok) {
+    return {
+      ok: false,
+      message: otpRes.message,
+      traceId: otpRes.traceId,
+      errorCode: otpRes.errorCode,
+    };
   }
 
   return {
     ok: true,
-    message: "کد تایید ارسال شد",
-    ...(dev ? { dev_code: code } : {}),
+    message: otpRes.message,
+    traceId: otpRes.traceId,
   };
 }
 
 export async function adminVerifyCode(phone: string, code: string) {
-  const phoneStr = String(phone).trim();
-  const codeStr = String(code).trim();
+  const normalizedPhone = normalizeIranPhone(phone);
+  const codeStr = String(code || "").trim();
 
-  if (!phoneStr || !codeStr) {
+  if (!normalizedPhone || !codeStr) {
     return { ok: false, message: "شماره تلفن و کد الزامی است" };
   }
 
-  const user = await prisma.user.findUnique({
-    where: { phone: phoneStr },
-    select: { id: true, role: true, status: true, token: true },
-  });
+  const legacyPhoneWithoutZero = normalizedPhone.startsWith("0")
+    ? normalizedPhone.slice(1)
+    : normalizedPhone;
+
+  let user = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { phone: normalizedPhone },
+      select: { id: true, role: true, status: true, token: true },
+    });
+    if (!user && legacyPhoneWithoutZero !== normalizedPhone) {
+      user = await prisma.user.findUnique({
+        where: { phone: legacyPhoneWithoutZero },
+        select: { id: true, role: true, status: true, token: true },
+      });
+    }
+  } catch (dbErr: any) {
+    console.error(`[ADMIN-OTP][DB ERROR] Failed to query user on verify: ${dbErr?.message?.split("\n")[0]}`);
+    return { ok: false, message: "خطا در اتصال به پایگاه داده سرور" };
+  }
 
   if (!user) {
     return { ok: false, message: "حساب کاربری یافت نشد" };
@@ -103,43 +106,14 @@ export async function adminVerifyCode(phone: string, code: string) {
     return { ok: false, message: "این حساب تعلیق شده است" };
   }
 
-  const dev = isDevMode();
-
-  if (!dev) {
-    const now = new Date();
-    const latestCode = await prisma.smsCode.findFirst({
-      where: {
-        phone: phoneStr,
-        used: false,
-        expires_at: { gt: now },
-      },
-      orderBy: { created_at: "desc" },
-    });
-
-    if (!latestCode) {
-      return { ok: false, message: "کد معتبر نیست یا منقضی شده است" };
-    }
-
-    if (latestCode.attempts >= 5) {
-      await prisma.smsCode.update({
-        where: { id: latestCode.id },
-        data: { used: true },
-      });
-      return { ok: false, message: "تعداد تلاش‌ها بیش از حد مجاز است" };
-    }
-
-    if (latestCode.code !== codeStr) {
-      await prisma.smsCode.update({
-        where: { id: latestCode.id },
-        data: { attempts: { increment: 1 } },
-      });
-      return { ok: false, message: "کد اشتباه است" };
-    }
-
-    await prisma.smsCode.update({
-      where: { id: latestCode.id },
-      data: { used: true },
-    });
+  const verification = await verifyOtpCode(normalizedPhone, codeStr, "ServerAction:adminVerifyCode");
+  if (!verification.ok) {
+    return {
+      ok: false,
+      message: verification.message,
+      traceId: verification.traceId,
+      errorCode: verification.errorCode,
+    };
   }
 
   const token = await generateToken();
@@ -147,7 +121,7 @@ export async function adminVerifyCode(phone: string, code: string) {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { token, token_expires: tokenExpires, status: "active" },
+    data: { phone: normalizedPhone, token, token_expires: tokenExpires, status: "active" },
   });
 
   const c = await cookies();
@@ -158,20 +132,18 @@ export async function adminVerifyCode(phone: string, code: string) {
     sameSite: "lax",
   });
 
-  return { ok: true, message: "ورود موفقیت‌آمیز بود" };
+  return { ok: true, message: "ورود موفقیت‌آمیز بود", traceId: verification.traceId };
 }
 
 export async function adminLogout() {
   const c = await cookies();
   const token = c.get('token')?.value;
-
   if (token) {
     await prisma.user.updateMany({
       where: { token },
       data: { token: null, token_expires: null },
     }).catch(() => {});
   }
-
   c.delete("token");
   return true;
 }

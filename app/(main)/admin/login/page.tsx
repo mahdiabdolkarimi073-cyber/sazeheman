@@ -1,11 +1,16 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PinInput, Loader } from '@mantine/core';
 import Link from 'next/link';
 import { adminSendCode, adminVerifyCode } from './action';
 import { optimizeForm } from '@/lib/utils/global';
+
+function maskClientPhone(phone: string): string {
+  const str = String(phone || '').trim();
+  if (str.length < 7) return '***';
+  return `${str.slice(0, 4)}***${str.slice(-4)}`;
+}
 
 function AdminLoginPage() {
   const router = useRouter();
@@ -14,49 +19,106 @@ function AdminLoginPage() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [devCode, setDevCode] = useState('');
+  const inFlightRef = useRef(false);
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const json = optimizeForm(e).toJson();
+    if (inFlightRef.current || loading) return;
 
-    if (!json.phone || String(json.phone).length < 10) {
+    const json = optimizeForm(e).toJson();
+    const rawPhone = String(json.phone || '').trim();
+    const maskedPhone = maskClientPhone(rawPhone);
+
+    console.info('[SMS-CLIENT][CLICK] Admin clicked send OTP button', {
+      endpoint: 'ServerAction:adminSendCode',
+      method: 'POST',
+      maskedPhone,
+    });
+
+    if (!rawPhone || rawPhone.length < 10) {
       setError('شماره تلفن معتبر نیست');
       return;
     }
 
     setError('');
+    inFlightRef.current = true;
     setLoading(true);
-    setPhone(String(json.phone));
+    setPhone(rawPhone);
 
-    const res = await adminSendCode(String(json.phone));
+    const startTime = performance.now();
+    try {
+      const res: any = await adminSendCode(rawPhone);
+      const durationMs = Math.round(performance.now() - startTime);
 
-    if (!res.ok) {
-      setError(res.message);
+      console.info('[SMS-CLIENT][RESPONSE] Admin OTP send response', {
+        endpoint: 'ServerAction:adminSendCode',
+        method: 'POST',
+        ok: res.ok,
+        durationMs,
+        traceId: res.traceId || null,
+        errorCode: res.errorCode || null,
+        message: res.message,
+      });
+
+      if (!res.ok) {
+        setError(res.message);
+        setLoading(false);
+        inFlightRef.current = false;
+        return;
+      }
+
+      setStep('code');
       setLoading(false);
-      return;
+      inFlightRef.current = false;
+    } catch (err: any) {
+      console.error('[SMS-CLIENT][ERROR] Admin OTP send exception', {
+        endpoint: 'ServerAction:adminSendCode',
+        durationMs: Math.round(performance.now() - startTime),
+        errorMessage: err?.message || 'Error',
+      });
+      setError('خطا در ارسال کد تایید');
+      setLoading(false);
+      inFlightRef.current = false;
     }
-
-    if (res.dev_code) setDevCode(res.dev_code);
-    setStep('code');
-    setLoading(false);
   };
 
   const handleCodeVerify = async () => {
-    if (code.length !== 6) return;
-
+    if (code.length !== 6 || loading) return;
     setError('');
     setLoading(true);
 
-    const res = await adminVerifyCode(phone, code);
+    const startTime = performance.now();
+    console.info('[SMS-CLIENT][VERIFY_START] Submitting admin OTP code', {
+      endpoint: 'ServerAction:adminVerifyCode',
+      maskedPhone: maskClientPhone(phone),
+    });
 
-    if (!res.ok) {
-      setError(res.message);
+    try {
+      const res: any = await adminVerifyCode(phone, code);
+      console.info('[SMS-CLIENT][VERIFY_RESPONSE] Admin OTP verify response', {
+        endpoint: 'ServerAction:adminVerifyCode',
+        ok: res.ok,
+        durationMs: Math.round(performance.now() - startTime),
+        traceId: res.traceId || null,
+        errorCode: res.errorCode || null,
+      });
+
+      if (!res.ok) {
+        setError(res.message);
+        setLoading(false);
+        return;
+      }
+
+      router.push('/admin');
+    } catch (err: any) {
+      console.error('[SMS-CLIENT][VERIFY_ERROR] Admin OTP verify exception', {
+        endpoint: 'ServerAction:adminVerifyCode',
+        durationMs: Math.round(performance.now() - startTime),
+        errorMessage: err?.message || 'Error',
+      });
+      setError('خطا در بررسی کد تایید');
       setLoading(false);
-      return;
     }
-
-    router.push('/admin');
   };
 
   return (
@@ -128,11 +190,6 @@ function AdminLoginPage() {
                 تغییر
               </button>
             </div>
-            {devCode && (
-              <p className="mt-2 text-xs text-amber-400">
-                حالت توسعه — کد: <span dir="ltr" className="font-bold">{devCode}</span>
-              </p>
-            )}
           </div>
 
           <div className="flex justify-center">

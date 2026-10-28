@@ -1,12 +1,17 @@
 'use client';
-
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {PinInput, Button} from '@mantine/core';
 import CustomButton from '@/components/ui/base/CustomButton';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {api} from '@/lib/api/base';
 import {sleep} from '@/lib/utils/global';
 import {useDelayedEffect} from '@/lib/hooks/useEffect';
+
+function maskClientPhone(phone: string): string {
+    const str = String(phone || '').trim();
+    if (str.length < 7) return '***';
+    return `${str.slice(0, 4)}***${str.slice(-4)}`;
+}
 
 function Page() {
     const router = useRouter();
@@ -17,6 +22,7 @@ function Page() {
     const [sec, setSec] = useState(120);
     const [checking, setChecking] = useState(false);
     const [sending, setSending] = useState(false);
+    const inFlightRef = useRef(false);
 
     useEffect(() => {
         if (sec <= 0) return;
@@ -24,26 +30,82 @@ function Page() {
     }, [sec]);
 
     const handleResend = () => {
+        if (!phone || sending || inFlightRef.current) return;
+        const endpoint = '/api/business/sms-send';
+        const startTime = performance.now();
+
+        console.info('[SMS-CLIENT][CLICK] User clicked business OTP resend', {
+            endpoint,
+            method: 'POST',
+            maskedPhone: maskClientPhone(phone),
+        });
+
+        inFlightRef.current = true;
         setSending(true);
         api('/business/sms-send', {phone}, 'POST')
-            .then(() => {
-                setSec(120);
+            .then((res: any) => {
+                console.info('[SMS-CLIENT][RESPONSE] Business OTP resend succeeded', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: res?.data?.traceId || null,
+                });
+                setSec(res?.data?.ttl || 120);
                 setCode('');
             })
-            .finally(() => setSending(false));
+            .catch((err: any) => {
+                console.error('[SMS-CLIENT][ERROR] Business OTP resend failed', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: err?.data?.traceId || null,
+                    errorCode: err?.data?.errorCode || null,
+                    message: err?.message || 'خطا در ارسال پیامک',
+                });
+            })
+            .finally(() => {
+                setSending(false);
+                inFlightRef.current = false;
+            });
+    };
+
+    const handleVerify = () => {
+        if (code.length !== 6 || checking) return;
+        const endpoint = '/api/business/sms-verify';
+        const startTime = performance.now();
+        setChecking(true);
+
+        console.info('[SMS-CLIENT][VERIFY_START] Submitting business OTP', {
+            endpoint,
+            method: 'POST',
+            maskedPhone: maskClientPhone(phone),
+        });
+
+        api('/business/sms-verify', {phone, code}, 'POST')
+            .then((res: any) => {
+                console.info('[SMS-CLIENT][VERIFY_SUCCESS] Business OTP verified', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    traceId: res?.data?.traceId || null,
+                });
+                router.push(`/auth/business/form?phone=${encodeURIComponent(phone)}`);
+            })
+            .catch((err: any) => {
+                console.error('[SMS-CLIENT][VERIFY_ERROR] Business OTP verification failed', {
+                    endpoint,
+                    method: 'POST',
+                    durationMs: Math.round(performance.now() - startTime),
+                    message: err?.message || 'خطا در تایید کد',
+                });
+                setChecking(false);
+                setCode('');
+            });
     };
 
     useDelayedEffect(() => {
         if (code.length !== 6) return;
-        setChecking(true);
-        api('/business/sms-verify', {phone, code}, 'POST')
-            .then(() => {
-                router.push(`/auth/business/form?phone=${phone}`);
-            })
-            .catch(() => {
-                setChecking(false);
-                setCode('');
-            });
+        handleVerify();
     }, [code]);
 
     return (
@@ -58,9 +120,6 @@ function Page() {
                 </h1>
                 <p className="text-sm text-[#6B7771]">
                     کد ۶ رقمی ارسال شده به شماره <span dir="ltr">{phone}</span> را وارد کنید
-                </p>
-                <p className="text-xs text-[#36B98A] mt-2">
-                    (حالت تستی: هر کدی را وارد کنید تا تایید شود)
                 </p>
             </div>
 
@@ -95,10 +154,12 @@ function Page() {
                         ارسال مجدد
                     </CustomButton>
                 )}
+
                 <Button
                     radius="xl"
                     loading={checking}
                     disabled={code.length !== 6}
+                    onClick={handleVerify}
                     size="lg"
                 >
                     تایید

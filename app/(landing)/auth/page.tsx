@@ -1,28 +1,68 @@
 'use client';
-
 import CustomButton from "@/components/ui/base/CustomButton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { optimizeForm } from "@/lib/utils/global";
 import { setApiInfo } from "@/lib/hooks/useApiInfo";
 import PhoneInput from "@/components/ui/base/PhoneInput";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { IconCharity, IconStore } from "@/components/ui/SVGs";
 
 type Mode = "sazeheman" | "shoghlman";
+
+function normalizeClientPhone(raw: unknown): string {
+    if (raw === null || raw === undefined) return "";
+    const persian = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+    const arabic = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+    let str = String(raw).trim();
+    for (let i = 0; i < 10; i++) {
+        str = str.replaceAll(persian[i], String(i)).replaceAll(arabic[i], String(i));
+    }
+    str = str.replace(/[\s\-().]/g, "");
+    if (str.startsWith("+98")) str = "0" + str.slice(3);
+    else if (str.startsWith("0098")) str = "0" + str.slice(4);
+    else if (str.startsWith("98") && str.length === 12) str = "0" + str.slice(2);
+    else if (str.startsWith("9") && str.length === 10) str = "0" + str;
+    return str;
+}
+
+function maskClientPhone(phone: string): string {
+    if (!phone || phone.length < 7) return "***";
+    return `${phone.slice(0, 4)}***${phone.slice(-4)}`;
+}
 
 function Page() {
     const router = useRouter();
     const [mode, setMode] = useState<Mode>("sazeheman");
     const [loading, setLoading] = useState(false);
+    const inFlightRef = useRef(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         const json = optimizeForm(e).toJson();
-        if (!json.phone) {
+        const normalizedPhone = normalizeClientPhone(json.phone);
+        const maskedPhone = maskClientPhone(normalizedPhone);
+
+        console.info("[SMS-CLIENT][CLICK] User clicked send OTP button", {
+            mode,
+            maskedPhone,
+            timestamp: new Date().toISOString(),
+        });
+
+        if (inFlightRef.current || loading) {
+            console.warn("[SMS-CLIENT][SKIP] Duplicate click ignored while request is in flight");
+            return;
+        }
+
+        if (!normalizedPhone) {
+            console.warn("[SMS-CLIENT][VALIDATION_ERROR] Empty phone input");
             window.alert("شماره تلفن خود را وارد کنید");
             return;
         }
-        if (json.phone.length < 10) {
+        if (!/^09\d{9}$/.test(normalizedPhone)) {
+            console.warn("[SMS-CLIENT][VALIDATION_ERROR] Invalid phone format", {
+                maskedPhone,
+                length: normalizedPhone.length,
+            });
             window.alert("شماره تلفن اشتباه است");
             setApiInfo({
                 errors: { phone: ['شماره تلفن اشتباه است!'] },
@@ -32,11 +72,74 @@ function Page() {
             return;
         }
 
+        const endpoint = mode === "shoghlman" ? "/api/business/sms-send" : "/api/auth/sms-send";
+        const method = "POST";
+        const startTime = performance.now();
+
+        inFlightRef.current = true;
         setLoading(true);
-        if (mode === "shoghlman") {
-            router.push("/auth/business/verify?phone=" + json.phone);
-        } else {
-            router.push("./auth/code?phone=" + json.phone);
+
+        console.info("[SMS-CLIENT][REQUEST] Sending OTP request to backend", {
+            endpoint,
+            method,
+            maskedPhone,
+        });
+
+        try {
+            const response = await fetch(endpoint, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ phone: normalizedPhone }),
+            });
+
+            const durationMs = Math.round(performance.now() - startTime);
+            const data = await response.json().catch(() => ({}));
+
+            console.info("[SMS-CLIENT][RESPONSE] Received response from backend", {
+                endpoint,
+                method,
+                httpStatus: response.status,
+                ok: response.ok && Boolean(data?.status),
+                durationMs,
+                traceId: data?.traceId || null,
+                errorCode: data?.errorCode || null,
+                message: data?.message || null,
+            });
+
+            if (!response.ok || !data?.status) {
+                if (response.status === 429 && data?.ttl) {
+                    console.warn("[SMS-CLIENT][COOLDOWN] Active OTP already exists, navigating to code input", {
+                        ttl: data.ttl,
+                        traceId: data.traceId,
+                    });
+                } else {
+                    window.alert(data?.message || "خطا در ارسال پیامک تایید");
+                    setLoading(false);
+                    inFlightRef.current = false;
+                    return;
+                }
+            }
+
+            if (mode === "shoghlman") {
+                router.push("/auth/business/verify?phone=" + encodeURIComponent(normalizedPhone));
+            } else {
+                router.push("./auth/code?phone=" + encodeURIComponent(normalizedPhone));
+            }
+        } catch (err: any) {
+            const durationMs = Math.round(performance.now() - startTime);
+            console.error("[SMS-CLIENT][ERROR] Failed to communicate with backend OTP endpoint", {
+                endpoint,
+                method,
+                durationMs,
+                errorName: err?.name || "Error",
+                errorMessage: err?.message || "Unknown network error",
+            });
+            window.alert("خطا در برقراری ارتباط با سرور جهت ارسال پیامک");
+            setLoading(false);
+            inFlightRef.current = false;
         }
     };
 
@@ -81,6 +184,7 @@ function Page() {
                         </span>
                     )}
                 </button>
+
                 <button
                     type="button"
                     onClick={() => setMode("shoghlman")}
